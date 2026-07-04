@@ -25,49 +25,63 @@
         <button id="loginBtn" class="bg-blue-600 text-white px-4 py-3 rounded-lg w-full font-bold text-lg hover:bg-blue-700 shadow-md transition">เข้าสู่ระบบ</button>
     </div>
 
-    <div id="staffApp" class="w-full max-w-2xl bg-white p-8 rounded-2xl shadow-xl hidden mt-4 mb-10 border-t-4 border-blue-600">
-        <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
-            <div class="flex items-center gap-3">
-                <div class="bg-blue-100 p-2 rounded-full text-blue-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                </div>
-                <div>
-                    <h1 class="text-2xl font-bold text-blue-900" id="counterDisplay">กำลังโหลด...</h1>
-                    <p class="text-sm font-semibold text-blue-600">แผนกเวชระเบียน โรงพยาบาลพะเยา</p>
-                </div>
-            </div>
-            <button id="logoutBtn" class="bg-red-50 text-red-500 px-4 py-2 rounded-lg hover:bg-red-100 font-semibold transition">ออกจากระบบ</button>
-        </div>
-
-        <div class="mb-6 bg-blue-50 p-6 rounded-xl border border-blue-100 shadow-inner">
-            <label class="block text-blue-900 text-lg font-bold mb-3">พิมพ์ชื่อ - นามสกุล ผู้รับบริการ</label>
-            <input type="text" id="patientName" placeholder="เช่น นาย สมชาย ใจดี" class="border-2 border-blue-200 p-4 rounded-xl w-full text-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition" autocomplete="off">
-            
-            <div class="grid grid-cols-2 gap-4 mt-5">
-                <button id="callBtn" class="bg-green-600 text-white p-4 rounded-xl font-bold text-lg hover:bg-green-500 shadow-md active:scale-95 transition flex justify-center items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
-                    เรียกลำดับใหม่
-                </button>
-                <button id="skipBtn" class="bg-slate-200 text-slate-700 p-4 rounded-xl font-bold text-lg hover:bg-slate-300 shadow-md active:scale-95 transition flex justify-center items-center gap-2">
-                    ⏭️ พักคิวไว้ก่อน
-                </button>
+    <div id="staffApp" class="w-full max-w-3xl hidden mt-4 mb-10 flex-col gap-6">
+        
+        <div class="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-yellow-400">
+            <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">
+                📊 สถิติการเรียกคิววันนี้
+            </h2>
+            <div id="staffStatsContainer" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <p class="text-slate-500 italic col-span-4 text-center">กำลังโหลดสถิติ...</p>
             </div>
         </div>
 
-        <div class="mt-8 bg-slate-50 p-6 rounded-xl border border-slate-200">
-            <h3 class="font-bold text-lg text-slate-700 mb-4 flex items-center gap-2">
-                📋 รายชื่อที่รอเรียกซ้ำ <span id="skipCount" class="bg-orange-100 text-orange-600 px-2 py-1 rounded-md text-sm">0 คน</span>
-            </h3>
-            <ul id="skippedList" class="space-y-3"></ul>
+        <div class="bg-white p-8 rounded-2xl shadow-xl border-t-4 border-blue-600">
+            <div class="flex justify-between items-center mb-6 border-b-2 border-slate-100 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-100 p-2 rounded-full text-blue-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-blue-900" id="counterDisplay">กำลังโหลด...</h1>
+                        <p class="text-sm font-semibold text-blue-600">แผนกเวชระเบียน โรงพยาบาลพะเยา</p>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="bg-red-50 text-red-500 px-4 py-2 rounded-lg hover:bg-red-100 font-semibold transition">ออกจากระบบ</button>
+            </div>
+
+            <div class="mb-6 bg-blue-50 p-6 rounded-xl border border-blue-100 shadow-inner">
+                <label class="block text-blue-900 text-lg font-bold mb-3">พิมพ์ชื่อ - นามสกุล ผู้รับบริการ</label>
+                <input type="text" id="patientName" placeholder="เช่น นาย สมชาย ใจดี" class="border-2 border-blue-200 p-4 rounded-xl w-full text-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition" autocomplete="off">
+                
+                <div class="grid grid-cols-2 gap-4 mt-5">
+                    <button id="callBtn" class="bg-green-600 text-white p-4 rounded-xl font-bold text-lg hover:bg-green-500 shadow-md active:scale-95 transition flex justify-center items-center gap-2">
+                        เรียกลำดับใหม่
+                    </button>
+                    <button id="skipBtn" class="bg-slate-200 text-slate-700 p-4 rounded-xl font-bold text-lg hover:bg-slate-300 shadow-md active:scale-95 transition flex justify-center items-center gap-2">
+                        ⏭️ พักคิวไว้ก่อน
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-8 bg-slate-50 p-6 rounded-xl border border-slate-200">
+                <h3 class="font-bold text-lg text-slate-700 mb-4 flex items-center gap-2">
+                    📋 รายชื่อที่รอเรียกซ้ำ <span id="skipCount" class="bg-orange-100 text-orange-600 px-2 py-1 rounded-md text-sm">0 คน</span>
+                </h3>
+                <ul id="skippedList" class="space-y-3"></ul>
+            </div>
         </div>
+
+        <footer class="text-center text-sm font-semibold text-slate-500 pb-8">
+            © สงวนลิขสิทธิ์ ออกแบบและพัฒนาโดยห้องเวชระเบียนผู้ป่วยนอกโรงพยาบาลพะเยา
+        </footer>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, push, get, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // Config ของคุณ
         const firebaseConfig = {
             apiKey: "AIzaSyAUg9GVdMIYVX4M6w2K4gMVdYy3YlbowxU",
             authDomain: "ne-q-3e0b7.firebaseapp.com",
@@ -85,7 +99,7 @@
         let myCounterName = "";
         let myCounterId = "";
         let skippedCount = 0;
-        let lastCalledName = ""; // ตัวแปรสำหรับป้องกันเรียกชื่อเดิมซ้ำรัวๆ
+        let lastCalledName = ""; 
 
         const loginSection = document.getElementById('loginSection');
         const staffApp = document.getElementById('staffApp');
@@ -93,16 +107,66 @@
         const skippedList = document.getElementById('skippedList');
         const skipCountDisplay = document.getElementById('skipCount');
 
-        // กรองอักขระพิเศษให้อ่านเฉพาะภาษาไทย/อังกฤษ
         patientNameInput.addEventListener('input', function() {
             this.value = this.value.replace(/[^ก-๙a-zA-Z\s]/g, '');
-            // ถ้าลบชื่อจนว่างเปล่า ให้เคลียร์ตัวล็อกชื่อเดิมทิ้ง
-            if (this.value.trim() === "") {
-                lastCalledName = "";
-            }
+            if (this.value.trim() === "") { lastCalledName = ""; }
         });
 
-        // จัดการสถานะล็อกอิน
+        // ตรวจสอบวันที่เพื่อล้างข้อมูลอัตโนมัติ (Smart Auto-Clear)
+        async function checkAndAutoClearData() {
+            const today = new Date().toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok' });
+            const dateRef = ref(db, 'live/lastClearDate');
+            const snap = await get(dateRef);
+            
+            if (snap.val() !== today) {
+                // ถ้าวันที่ในระบบไม่ตรงกับวันนี้ ให้ลบข้อมูลเก่าและเซ็ตวันที่ใหม่
+                await remove(ref(db, 'live/calls'));
+                await set(dateRef, today);
+                console.log("Auto-cleared old data for a new day!");
+            }
+        }
+
+        // ดึงสถิติมาแสดง
+        function loadStaffStats() {
+            onValue(ref(db, 'live/calls'), (snapshot) => {
+                const statsContainer = document.getElementById('staffStatsContainer');
+                statsContainer.innerHTML = '';
+                if (!snapshot.exists()) {
+                    statsContainer.innerHTML = '<p class="text-slate-500 italic col-span-4 text-center py-4">ยังไม่มีประวัติการเรียกคิวในวันนี้</p>';
+                    return;
+                }
+
+                const stats = {};
+                snapshot.forEach(child => {
+                    const cName = child.val().counterName;
+                    stats[cName] = (stats[cName] || 0) + 1;
+                });
+
+                // เรียงให้ช่องของตัวเองมาอยู่หน้าสุด
+                const statsArray = Object.entries(stats).sort((a, b) => {
+                    if (a[0] === myCounterName) return -1;
+                    if (b[0] === myCounterName) return 1;
+                    return b[1] - a[1];
+                });
+
+                statsArray.forEach(([name, count]) => {
+                    const isMine = (name === myCounterName);
+                    const div = document.createElement('div');
+                    
+                    if (isMine) {
+                        // ช่องตัวเอง: สีน้ำเงินเข้ม ใหญ่พิเศษ
+                        div.className = "bg-blue-600 p-4 rounded-xl text-center shadow-lg transform scale-105 ring-4 ring-blue-200 flex flex-col justify-center z-10";
+                        div.innerHTML = `<p class="text-xs text-blue-100 font-bold mb-1">⭐ ${name}</p><p class="text-4xl font-bold text-white">${count}</p>`;
+                    } else {
+                        // ช่องคนอื่น: สีเทาอ่อน
+                        div.className = "bg-slate-50 p-4 rounded-xl text-center border border-slate-200 shadow-sm flex flex-col justify-center opacity-90";
+                        div.innerHTML = `<p class="text-xs text-slate-500 font-bold mb-1">${name}</p><p class="text-2xl font-bold text-slate-700">${count}</p>`;
+                    }
+                    statsContainer.appendChild(div);
+                });
+            });
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const userSnapshot = await get(ref(db, `users/${user.uid}`));
@@ -114,15 +178,19 @@
                         document.getElementById('counterDisplay').innerText = myCounterName;
                         loginSection.classList.add('hidden');
                         staffApp.classList.remove('hidden');
+                        staffApp.classList.add('flex');
+                        
+                        // เริ่มทำงานฟังก์ชันใหม่
+                        await checkAndAutoClearData();
+                        loadStaffStats();
+                        
                         setTimeout(() => patientNameInput.focus(), 500);
                     }
-                } else {
-                    alert("สิทธิ์ไม่ถูกต้อง กรุณาติดต่อผู้ดูแลระบบ");
-                    signOut(auth);
-                }
+                } else { alert("สิทธิ์ไม่ถูกต้อง"); signOut(auth); }
             } else {
                 loginSection.classList.remove('hidden');
                 staffApp.classList.add('hidden');
+                staffApp.classList.remove('flex');
             }
         });
 
@@ -131,24 +199,19 @@
                 .catch(e => alert("อีเมลหรือรหัสผ่านไม่ถูกต้อง"));
         };
 
-        // กด Enter บนคีย์บอร์ดเพื่อเรียกคิวได้ทันที
         patientNameInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                document.getElementById('callBtn').click();
-            }
+            if (e.key === 'Enter') { document.getElementById('callBtn').click(); }
         });
 
-        // ออกจากระบบ
         document.getElementById('logoutBtn').onclick = () => {
             signOut(auth);
             patientNameInput.value = '';
             skippedList.innerHTML = '';
             skippedCount = 0;
             lastCalledName = "";
-            updateSkipCount();
+            document.getElementById('skipCount').innerText = "0 คน";
         };
 
-        // ฟังก์ชันหลักในการส่งข้อมูลขึ้นจอทีวี
         const pushToDisplay = (name, type) => {
             push(ref(db, 'live/calls'), {
                 name: name,
@@ -158,38 +221,24 @@
             });
         };
 
-        function updateSkipCount() {
-            skipCountDisplay.innerText = `${skippedCount} คน`;
-        }
-
-        // ปุ่ม เรียกลำดับใหม่
         document.getElementById('callBtn').onclick = () => {
             const name = patientNameInput.value.trim();
-            if (!name) { 
-                alert("กรุณาพิมพ์ชื่อผู้รับบริการก่อนครับ"); 
-                patientNameInput.focus(); 
-                return; 
-            }
-
-            // [ป้องกันการกดซ้ำ] เช็คว่าตรงกับชื่อที่เพิ่งเรียกไปหรือไม่
+            if (!name) { alert("กรุณาพิมพ์ชื่อผู้รับบริการ"); patientNameInput.focus(); return; }
             if (name === lastCalledName) {
                 alert("⚠️ คุณเพิ่งเรียกชื่อนี้ไปแล้วครับ!\n\nหากผู้รับบริการยังไม่มา ให้กดปุ่ม [⏭️ พักคิวไว้ก่อน] แล้วใช้ปุ่มเรียกซ้ำจากรายการด้านล่างแทนครับ");
                 return;
             }
-
             pushToDisplay(name, 'new');
-            lastCalledName = name; // บันทึกล็อกชื่อที่เรียกไปล่าสุด
+            lastCalledName = name; 
         };
 
-        // ปุ่ม พักคิวไว้ก่อน
         document.getElementById('skipBtn').onclick = () => {
             const name = patientNameInput.value.trim();
             if (!name) { patientNameInput.focus(); return; }
 
             skippedCount++;
-            updateSkipCount();
+            document.getElementById('skipCount').innerText = `${skippedCount} คน`;
 
-            // สร้างรายการใหม่
             const li = document.createElement('li');
             li.className = "flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 border-2 border-slate-100 rounded-xl shadow-sm gap-3 transition hover:border-blue-200";
 
@@ -208,21 +257,14 @@
             const doneBtn = document.createElement('button');
             doneBtn.className = "flex-1 sm:flex-none bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-bold hover:bg-green-500 hover:text-white shadow active:scale-95 transition";
             doneBtn.innerText = "✅ เสร็จสิ้น";
-            doneBtn.onclick = () => { 
-                li.remove(); 
-                skippedCount--; 
-                updateSkipCount(); 
-            };
+            doneBtn.onclick = () => { li.remove(); skippedCount--; document.getElementById('skipCount').innerText = `${skippedCount} คน`; };
 
             actionDiv.appendChild(recallBtn);
             actionDiv.appendChild(doneBtn);
             li.appendChild(nameSpan);
             li.appendChild(actionDiv);
-            
-            // นำรายการใหม่ไปไว้ด้านบนสุด
-            skippedList.prepend(li);
+            document.getElementById('skippedList').prepend(li);
 
-            // เคลียร์ข้อมูลทั้งหมดเพื่อรับคิวใหม่
             patientNameInput.value = '';
             lastCalledName = ""; 
             patientNameInput.focus();
