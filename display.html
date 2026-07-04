@@ -35,7 +35,6 @@
         import { getDatabase, ref, onChildAdded, query, orderByChild, startAt } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
-            /* วาง FIREBASE CONFIG ของคุณที่นี่ */
             apiKey: "AIzaSyAUg9GVdMIYVX4M6w2K4gMVdYy3YlbowxU",
             authDomain: "ne-q-3e0b7.firebaseapp.com",
             databaseURL: "https://ne-q-3e0b7-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -48,17 +47,21 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Queue System
         let callQueue = [];
         let isSpeaking = false;
+        
+        // เก็บ array ของตัวอ่านไว้ ป้องกันบั๊กเสียงหายกลางคันในบางเบราว์เซอร์
+        window.speechUtterances = []; 
+
+        // โหลดเสียงรอล่วงหน้า (Browser บางตัวต้องสั่งโหลดก่อน)
+        window.speechSynthesis.getVoices();
 
         const loadTime = Date.now(); 
 
         document.getElementById('startBtn').onclick = () => {
-            // ปลดล็อก Audio Context โดยเล่นไฟล์เสียงเงียบ (Silent base64) 1 ครั้ง
-            const dummyAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
-            dummyAudio.play().catch(e => console.log("Unlock audio info:", e));
-            
+            // ปลดล็อก Audio Policy
+            const dummy = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(dummy);
             document.getElementById('startOverlay').style.display = 'none';
 
             // เริ่ม Listen ข้อมูลจาก Firebase
@@ -76,37 +79,44 @@
             isSpeaking = true;
             const data = callQueue.shift();
             
-            // อัปเดตหน้าจอ
             document.getElementById('displayName').innerText = data.name;
             document.getElementById('displayCounter').innerText = "ที่ " + data.counterName;
             
-            // ดึงเสียงจาก Google Translate TTS
+            // ใช้ Web Speech API แต่ปรับจูนความเร็วและเสียง
             const textToSpeak = `ขอเชิญคุณ ${data.name} ที่ ${data.counterName} ค่ะ`;
-            const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(textToSpeak)}`;
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.lang = 'th-TH';
             
-            const audio = new Audio(url);
+            // ปรับความเร็ว (1 คือปกติ, ต่ำกว่า 1 คือช้าลง)
+            utterance.rate = 0.75; 
+            utterance.pitch = 1;
+
+            // ค้นหาเสียงภาษาไทยที่ดีที่สุดในเครื่อง
+            const voices = window.speechSynthesis.getVoices();
+            const thaiVoices = voices.filter(v => v.lang.includes('th'));
             
-            // เมื่อพูดจบให้หน่วงเวลา 1.5 วินาทีก่อนเรียกคนต่อไป (ถ้ามีคิวรอ)
-            audio.onended = () => {
+            if (thaiVoices.length > 0) {
+                // พยายามหาเสียง Online หรือ Google ซึ่งจะนุ่มกว่าเสียง Default
+                const premiumVoice = thaiVoices.find(v => v.name.includes('Online') || v.name.includes('Google'));
+                utterance.voice = premiumVoice ? premiumVoice : thaiVoices[0];
+            }
+
+            window.speechUtterances.push(utterance);
+
+            utterance.onend = () => {
                 setTimeout(() => {
                     isSpeaking = false;
                     processQueue();
-                }, 1500); 
+                }, 1500); // หน่วง 1.5 วินาทีก่อนเรียกคนต่อไป
             };
 
-            // หากมี Error ในการดึงไฟล์เสียง ให้ข้ามไปคนต่อไปเลย ระบบจะได้ไม่ค้าง
-            audio.onerror = () => {
-                console.error("ไม่สามารถดึงเสียงได้ ระบบจะข้ามไปคิวถัดไป");
+            utterance.onerror = (e) => {
+                console.error("Speech Error:", e);
                 isSpeaking = false;
                 processQueue();
             };
 
-            // สั่งเล่นเสียง
-            audio.play().catch(e => {
-                console.error("Audio playback error:", e);
-                isSpeaking = false;
-                processQueue();
-            });
+            window.speechSynthesis.speak(utterance);
         }
     </script>
 </body>
