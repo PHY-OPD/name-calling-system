@@ -6,6 +6,10 @@
     <title>หน้าจอแสดงคิว</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- นำเข้าไลบรารี ResponsiveVoice (ฟรี) -->
+    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+    
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #000; overflow: hidden; }
         .blink { animation: blinker 2s linear infinite; }
@@ -14,12 +18,14 @@
 </head>
 <body class="text-white h-screen flex flex-col justify-center items-center relative">
     
+    <!-- ปุ่มเพื่อปลดล็อกระบบเสียงของเบราว์เซอร์ -->
     <div id="startOverlay" class="absolute inset-0 bg-black z-50 flex items-center justify-center">
         <button id="startBtn" class="bg-blue-600 text-white text-4xl px-12 py-6 rounded-2xl shadow-[0_0_40px_rgba(37,99,235,0.6)] hover:bg-blue-700 hover:scale-105 transition">
             ▶ เริ่มหน้าจอประกาศ
         </button>
     </div>
 
+    <!-- UI หน้าจอแสดงผล -->
     <div class="text-center w-full max-w-6xl px-4">
         <p class="text-4xl text-gray-400 mb-6 font-bold tracking-widest">ขอเชิญผู้รับบริการ</p>
         <div class="bg-gray-900 border-4 border-gray-700 rounded-3xl p-16 shadow-2xl">
@@ -47,76 +53,60 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // ระบบคิว
         let callQueue = [];
         let isSpeaking = false;
-        
-        // เก็บ array ของตัวอ่านไว้ ป้องกันบั๊กเสียงหายกลางคันในบางเบราว์เซอร์
-        window.speechUtterances = []; 
-
-        // โหลดเสียงรอล่วงหน้า (Browser บางตัวต้องสั่งโหลดก่อน)
-        window.speechSynthesis.getVoices();
-
         const loadTime = Date.now(); 
 
         document.getElementById('startBtn').onclick = () => {
-            // ปลดล็อก Audio Policy
-            const dummy = new SpeechSynthesisUtterance("");
-            window.speechSynthesis.speak(dummy);
+            // ซ่อนปุ่ม
             document.getElementById('startOverlay').style.display = 'none';
 
-            // เริ่ม Listen ข้อมูลจาก Firebase
+            // เล่นเสียงเงียบ 1 ครั้งเพื่อปลดล็อก Audio Context ให้ ResponsiveVoice พร้อมทำงาน
+            if (typeof responsiveVoice !== 'undefined') {
+                responsiveVoice.speak(" ", "Thai Female", {volume: 0});
+            }
+
+            // เริ่มดึงข้อมูลจาก Firebase
             const callsRef = query(ref(db, 'live/calls'), orderByChild('timestamp'), startAt(loadTime));
             onChildAdded(callsRef, (snapshot) => {
-                const data = snapshot.val();
-                callQueue.push(data);
+                callQueue.push(snapshot.val());
                 processQueue();
             });
         };
 
         function processQueue() {
             if (isSpeaking || callQueue.length === 0) return;
-            
             isSpeaking = true;
+            
+            // ดึงคิวแรกออกมา
             const data = callQueue.shift();
             
+            // อัปเดตหน้าจอ
             document.getElementById('displayName').innerText = data.name;
             document.getElementById('displayCounter').innerText = "ที่ " + data.counterName;
             
-            // ใช้ Web Speech API แต่ปรับจูนความเร็วและเสียง
             const textToSpeak = `ขอเชิญคุณ ${data.name} ที่ ${data.counterName} ค่ะ`;
-            const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            utterance.lang = 'th-TH';
             
-            // ปรับความเร็ว (1 คือปกติ, ต่ำกว่า 1 คือช้าลง)
-            utterance.rate = 0.75; 
-            utterance.pitch = 1;
-
-            // ค้นหาเสียงภาษาไทยที่ดีที่สุดในเครื่อง
-            const voices = window.speechSynthesis.getVoices();
-            const thaiVoices = voices.filter(v => v.lang.includes('th'));
-            
-            if (thaiVoices.length > 0) {
-                // พยายามหาเสียง Online หรือ Google ซึ่งจะนุ่มกว่าเสียง Default
-                const premiumVoice = thaiVoices.find(v => v.name.includes('Online') || v.name.includes('Google'));
-                utterance.voice = premiumVoice ? premiumVoice : thaiVoices[0];
-            }
-
-            window.speechUtterances.push(utterance);
-
-            utterance.onend = () => {
-                setTimeout(() => {
-                    isSpeaking = false;
-                    processQueue();
-                }, 1500); // หน่วง 1.5 วินาทีก่อนเรียกคนต่อไป
-            };
-
-            utterance.onerror = (e) => {
-                console.error("Speech Error:", e);
+            // สั่งอ่านเสียงด้วย ResponsiveVoice
+            if (typeof responsiveVoice !== 'undefined') {
+                responsiveVoice.speak(textToSpeak, "Thai Female", {
+                    rate: 0.75,   // ความเร็วเสียง (0.7 - 0.8 กำลังดีสำหรับภาษาไทย)
+                    pitch: 1,     // ระดับความสูงต่ำของเสียง
+                    volume: 1,    // ความดัง
+                    onend: () => {
+                        // เมื่อพูดจบ รอ 1.5 วินาทีค่อยเรียกคิวถัดไป (ป้องกันเสียงตีกัน)
+                        setTimeout(() => {
+                            isSpeaking = false;
+                            processQueue();
+                        }, 1500); 
+                    }
+                });
+            } else {
+                console.error("โหลดไลบรารีเสียงไม่สำเร็จ");
                 isSpeaking = false;
                 processQueue();
-            };
-
-            window.speechSynthesis.speak(utterance);
+            }
         }
     </script>
 </body>
