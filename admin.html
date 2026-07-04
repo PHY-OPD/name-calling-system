@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - ระบบเรียกชื่อ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Sarabun', sans-serif; }</style>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div id="app" class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-blue-700">⚙️ Admin Panel</h1>
+            <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">ออกจากระบบ</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="border p-6 rounded-lg bg-gray-50">
+                <h2 class="text-xl font-semibold mb-4">1. เพิ่มช่องบริการ</h2>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="counterName" placeholder="เช่น ช่องที่ 1, เภสัชกรรม" class="border p-2 rounded w-full">
+                    <button id="addCounterBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">เพิ่ม</button>
+                </div>
+                <ul id="counterList" class="space-y-2 max-h-48 overflow-y-auto"></ul>
+            </div>
+
+            <div class="border p-6 rounded-lg bg-gray-50">
+                <h2 class="text-xl font-semibold mb-4">2. เพิ่มพนักงาน (Staff)</h2>
+                <input type="email" id="staffEmail" placeholder="อีเมลพนักงาน" class="border p-2 rounded w-full mb-2">
+                <input type="password" id="staffPass" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" class="border p-2 rounded w-full mb-2">
+                <select id="staffCounter" class="border p-2 rounded w-full mb-4">
+                    <option value="">-- เลือกช่องบริการประจำ --</option>
+                </select>
+                <button id="addStaffBtn" class="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700">สร้างบัญชีพนักงาน</button>
+                <div id="staffStatus" class="mt-2 text-sm"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="authSection" class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-md mt-20">
+        <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">ผู้ดูแลระบบ</h1>
+        <input type="email" id="authEmail" placeholder="อีเมล" class="border p-2 rounded w-full mb-4">
+        <input type="password" id="authPass" placeholder="รหัสผ่าน" class="border p-2 rounded w-full mb-6">
+        <div class="flex gap-4">
+            <button id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded w-full">เข้าสู่ระบบ</button>
+            <button id="registerBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded w-full text-sm">ลงทะเบียน Admin แรก</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAUg9GVdMIYVX4M6w2K4gMVdYy3YlbowxU",
+            authDomain: "ne-q-3e0b7.firebaseapp.com",
+            databaseURL: "https://ne-q-3e0b7-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ne-q-3e0b7",
+            storageBucket: "ne-q-3e0b7.firebasestorage.app",
+            messagingSenderId: "559471760244",
+            appId: "1:559471760244:web:0d1721ae633f26b3a29221",
+            measurementId: "G-8NCWYGGXLZ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // Secondary App สำหรับให้ Admin สร้างบัญชี Staff โดยที่ Admin ไม่หลุดจากระบบ
+        const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+        const secondaryAuth = getAuth(secondaryApp);
+
+        // UI Elements
+        const appDiv = document.getElementById('app');
+        const authSection = document.getElementById('authSection');
+        const counterList = document.getElementById('counterList');
+        const staffCounterSelect = document.getElementById('staffCounter');
+
+        // Auth State
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                authSection.classList.add('hidden');
+                appDiv.classList.remove('hidden');
+                loadCounters();
+            } else {
+                authSection.classList.remove('hidden');
+                appDiv.classList.add('hidden');
+            }
+        });
+
+        // Register First Admin
+        document.getElementById('registerBtn').onclick = async () => {
+            const email = document.getElementById('authEmail').value;
+            const pass = document.getElementById('authPass').value;
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                await set(ref(db, 'users/' + cred.user.uid), { role: 'admin' });
+                alert("สร้างบัญชี Admin สำเร็จ");
+            } catch (e) { alert(e.message); }
+        };
+
+        // Login Admin
+        document.getElementById('loginBtn').onclick = async () => {
+            try {
+                await signInWithEmailAndPassword(auth, document.getElementById('authEmail').value, document.getElementById('authPass').value);
+            } catch (e) { alert("เข้าสู่ระบบล้มเหลว: " + e.message); }
+        };
+
+        // Logout
+        document.getElementById('logoutBtn').onclick = () => signOut(auth);
+
+        // Add Counter
+        document.getElementById('addCounterBtn').onclick = async () => {
+            const name = document.getElementById('counterName').value.trim();
+            if(!name) return;
+            const newRef = push(ref(db, 'counters'));
+            await set(newRef, { id: newRef.key, name: name });
+            document.getElementById('counterName').value = '';
+        };
+
+        // Load Counters
+        function loadCounters() {
+            onValue(ref(db, 'counters'), (snapshot) => {
+                counterList.innerHTML = '';
+                staffCounterSelect.innerHTML = '<option value="">-- เลือกช่องบริการประจำ --</option>';
+                snapshot.forEach((child) => {
+                    const data = child.val();
+                    // Update List
+                    const li = document.createElement('li');
+                    li.className = "bg-white p-2 border rounded text-sm";
+                    li.innerText = data.name;
+                    counterList.appendChild(li);
+                    // Update Select
+                    const opt = document.createElement('option');
+                    opt.value = child.key;
+                    opt.innerText = data.name;
+                    staffCounterSelect.appendChild(opt);
+                });
+            });
+        }
+
+        // Add Staff
+        document.getElementById('addStaffBtn').onclick = async () => {
+            const email = document.getElementById('staffEmail').value;
+            const pass = document.getElementById('staffPass').value;
+            const counterId = staffCounterSelect.value;
+            const status = document.getElementById('staffStatus');
+            
+            if(!email || !pass || !counterId) {
+                status.innerText = "กรุณากรอกข้อมูลให้ครบ";
+                status.className = "mt-2 text-sm text-red-500";
+                return;
+            }
+
+            status.innerText = "กำลังสร้าง...";
+            status.className = "mt-2 text-sm text-blue-500";
+            
+            try {
+                const cred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
+                await set(ref(db, 'users/' + cred.user.uid), {
+                    role: 'staff',
+                    counterId: counterId
+                });
+                await signOut(secondaryAuth);
+                status.innerText = "สร้างบัญชีพนักงานสำเร็จ!";
+                status.className = "mt-2 text-sm text-green-500";
+                document.getElementById('staffEmail').value = '';
+                document.getElementById('staffPass').value = '';
+            } catch (e) {
+                status.innerText = "Error: " + e.message;
+                status.className = "mt-2 text-sm text-red-500";
+            }
+        };
+    </script>
+</body>
+</html>

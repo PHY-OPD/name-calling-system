@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าจอแสดงคิว</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #000; overflow: hidden; }
+        .blink { animation: blinker 2s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.3; color: #fde047; } }
+    </style>
+</head>
+<body class="text-white h-screen flex flex-col justify-center items-center relative">
+    
+    <div id="startOverlay" class="absolute inset-0 bg-black z-50 flex items-center justify-center">
+        <button id="startBtn" class="bg-blue-600 text-white text-4xl px-12 py-6 rounded-2xl shadow-[0_0_40px_rgba(37,99,235,0.6)] hover:bg-blue-700 hover:scale-105 transition">
+            ▶ เริ่มหน้าจอประกาศ
+        </button>
+    </div>
+
+    <div class="text-center w-full max-w-6xl px-4">
+        <p class="text-4xl text-gray-400 mb-6 font-bold tracking-widest">ขอเชิญผู้รับบริการ</p>
+        <div class="bg-gray-900 border-4 border-gray-700 rounded-3xl p-16 shadow-2xl">
+            <h1 id="displayName" class="text-7xl md:text-[7rem] font-bold text-white mb-8 truncate blink">-- ว่าง --</h1>
+            <div class="inline-block bg-blue-700 px-12 py-4 rounded-full">
+                <h2 id="displayCounter" class="text-5xl md:text-6xl font-bold text-yellow-300">กรุณารอเรียกชื่อ</h2>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, onChildAdded, query, orderByChild, startAt } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAUg9GVdMIYVX4M6w2K4gMVdYy3YlbowxU",
+            authDomain: "ne-q-3e0b7.firebaseapp.com",
+            databaseURL: "https://ne-q-3e0b7-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ne-q-3e0b7",
+            storageBucket: "ne-q-3e0b7.firebasestorage.app",
+            messagingSenderId: "559471760244",
+            appId: "1:559471760244:web:0d1721ae633f26b3a29221",
+            measurementId: "G-8NCWYGGXLZ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Queue System
+        let callQueue = [];
+        let isSpeaking = false;
+        // เก็บ Utterances ไว้ใน Global ป้องกัน Garbage Collection บั๊กในบางเบราว์เซอร์
+        window.speechUtterances = []; 
+
+        const loadTime = Date.now(); // ป้องกันไม่ให้ดึงประวัติเก่าๆ มาอ่านเมื่อเปิดจอ
+
+        document.getElementById('startBtn').onclick = () => {
+            // ปลดล็อก Audio
+            const dummy = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(dummy);
+            document.getElementById('startOverlay').style.display = 'none';
+
+            // เริ่ม Listen ข้อมูลจาก Firebase
+            const callsRef = query(ref(db, 'live/calls'), orderByChild('timestamp'), startAt(loadTime));
+            onChildAdded(callsRef, (snapshot) => {
+                const data = snapshot.val();
+                callQueue.push(data);
+                processQueue();
+            });
+        };
+
+        function processQueue() {
+            if (isSpeaking || callQueue.length === 0) return;
+            
+            isSpeaking = true;
+            const data = callQueue.shift();
+            
+            // อัปเดตหน้าจอ
+            document.getElementById('displayName').innerText = data.name;
+            document.getElementById('displayCounter').innerText = "ที่ " + data.counterName;
+            
+            // สร้างเสียงอ่านภาษาไทย
+            const textToSpeak = `ขอเชิญคุณ ${data.name} ที่ ${data.counterName} ค่ะ`;
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.lang = 'th-TH';
+            utterance.rate = 0.85; // ปรับให้ช้าลงเล็กน้อยให้ฟังชัด
+            utterance.pitch = 1;
+
+            window.speechUtterances.push(utterance);
+
+            utterance.onend = () => {
+                setTimeout(() => {
+                    isSpeaking = false;
+                    processQueue();
+                }, 1500); // เว้นระยะ 1.5 วินาที ก่อนเรียกคนต่อไป
+            };
+
+            utterance.onerror = () => {
+                isSpeaking = false;
+                processQueue();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+</html>
