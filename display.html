@@ -35,14 +35,14 @@
         import { getDatabase, ref, onChildAdded, query, orderByChild, startAt } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
+            /* วาง FIREBASE CONFIG ของคุณที่นี่ */
             apiKey: "AIzaSyAUg9GVdMIYVX4M6w2K4gMVdYy3YlbowxU",
             authDomain: "ne-q-3e0b7.firebaseapp.com",
             databaseURL: "https://ne-q-3e0b7-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "ne-q-3e0b7",
             storageBucket: "ne-q-3e0b7.firebasestorage.app",
             messagingSenderId: "559471760244",
-            appId: "1:559471760244:web:0d1721ae633f26b3a29221",
-            measurementId: "G-8NCWYGGXLZ"
+            appId: "1:559471760244:web:0d1721ae633f26b3a29221"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -51,15 +51,14 @@
         // Queue System
         let callQueue = [];
         let isSpeaking = false;
-        // เก็บ Utterances ไว้ใน Global ป้องกัน Garbage Collection บั๊กในบางเบราว์เซอร์
-        window.speechUtterances = []; 
 
-        const loadTime = Date.now(); // ป้องกันไม่ให้ดึงประวัติเก่าๆ มาอ่านเมื่อเปิดจอ
+        const loadTime = Date.now(); 
 
         document.getElementById('startBtn').onclick = () => {
-            // ปลดล็อก Audio
-            const dummy = new SpeechSynthesisUtterance("");
-            window.speechSynthesis.speak(dummy);
+            // ปลดล็อก Audio Context โดยเล่นไฟล์เสียงเงียบ (Silent base64) 1 ครั้ง
+            const dummyAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+            dummyAudio.play().catch(e => console.log("Unlock audio info:", e));
+            
             document.getElementById('startOverlay').style.display = 'none';
 
             // เริ่ม Listen ข้อมูลจาก Firebase
@@ -81,28 +80,33 @@
             document.getElementById('displayName').innerText = data.name;
             document.getElementById('displayCounter').innerText = "ที่ " + data.counterName;
             
-            // สร้างเสียงอ่านภาษาไทย
+            // ดึงเสียงจาก Google Translate TTS
             const textToSpeak = `ขอเชิญคุณ ${data.name} ที่ ${data.counterName} ค่ะ`;
-            const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            utterance.lang = 'th-TH';
-            utterance.rate = 0.85; // ปรับให้ช้าลงเล็กน้อยให้ฟังชัด
-            utterance.pitch = 1;
-
-            window.speechUtterances.push(utterance);
-
-            utterance.onend = () => {
+            const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q=${encodeURIComponent(textToSpeak)}`;
+            
+            const audio = new Audio(url);
+            
+            // เมื่อพูดจบให้หน่วงเวลา 1.5 วินาทีก่อนเรียกคนต่อไป (ถ้ามีคิวรอ)
+            audio.onended = () => {
                 setTimeout(() => {
                     isSpeaking = false;
                     processQueue();
-                }, 1500); // เว้นระยะ 1.5 วินาที ก่อนเรียกคนต่อไป
+                }, 1500); 
             };
 
-            utterance.onerror = () => {
+            // หากมี Error ในการดึงไฟล์เสียง ให้ข้ามไปคนต่อไปเลย ระบบจะได้ไม่ค้าง
+            audio.onerror = () => {
+                console.error("ไม่สามารถดึงเสียงได้ ระบบจะข้ามไปคิวถัดไป");
                 isSpeaking = false;
                 processQueue();
             };
 
-            window.speechSynthesis.speak(utterance);
+            // สั่งเล่นเสียง
+            audio.play().catch(e => {
+                console.error("Audio playback error:", e);
+                isSpeaking = false;
+                processQueue();
+            });
         }
     </script>
 </body>
