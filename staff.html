@@ -26,11 +26,8 @@
     </div>
 
     <div id="staffApp" class="w-full max-w-3xl hidden mt-4 mb-10 flex-col gap-6">
-        
         <div class="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-yellow-400">
-            <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">
-                📊 สถิติการเรียกคิววันนี้
-            </h2>
+            <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2 flex items-center gap-2">📊 สถิติการเรียกคิววันนี้</h2>
             <div id="staffStatsContainer" class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <p class="text-slate-500 italic col-span-4 text-center">กำลังโหลดสถิติ...</p>
             </div>
@@ -51,30 +48,21 @@
             </div>
 
             <div class="mb-6 bg-blue-50 p-6 rounded-xl border border-blue-100 shadow-inner">
-                <label class="block text-blue-900 text-lg font-bold mb-3">พิมพ์ชื่อ - นามสกุล ผู้รับบริการ</label>
-                <input type="text" id="patientName" placeholder="เช่น นาย สมชาย ใจดี" class="border-2 border-blue-200 p-4 rounded-xl w-full text-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition" autocomplete="off">
+                <label class="block text-blue-900 text-lg font-bold mb-3">พิมพ์ชื่อ - นามสกุล ผู้รับบริการ (ภาษาไทย/อังกฤษ)</label>
+                <input type="text" id="patientName" placeholder="เช่น สมชาย ใจดี หรือ John Smith" class="border-2 border-blue-200 p-4 rounded-xl w-full text-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition" autocomplete="off">
                 
                 <div class="grid grid-cols-2 gap-4 mt-5">
-                    <button id="callBtn" class="bg-green-600 text-white p-4 rounded-xl font-bold text-lg hover:bg-green-500 shadow-md active:scale-95 transition flex justify-center items-center gap-2">
-                        เรียกลำดับใหม่
-                    </button>
-                    <button id="skipBtn" class="bg-slate-200 text-slate-700 p-4 rounded-xl font-bold text-lg hover:bg-slate-300 shadow-md active:scale-95 transition flex justify-center items-center gap-2">
-                        ⏭️ พักคิวไว้ก่อน
-                    </button>
+                    <button id="callBtn" class="bg-green-600 text-white p-4 rounded-xl font-bold text-lg hover:bg-green-500 shadow-md active:scale-95 transition flex justify-center items-center gap-2">เรียกลำดับใหม่</button>
+                    <button id="skipBtn" class="bg-slate-200 text-slate-700 p-4 rounded-xl font-bold text-lg hover:bg-slate-300 shadow-md active:scale-95 transition flex justify-center items-center gap-2">⏭️ พักคิวไว้ก่อน</button>
                 </div>
             </div>
 
             <div class="mt-8 bg-slate-50 p-6 rounded-xl border border-slate-200">
-                <h3 class="font-bold text-lg text-slate-700 mb-4 flex items-center gap-2">
-                    📋 รายชื่อที่รอเรียกซ้ำ <span id="skipCount" class="bg-orange-100 text-orange-600 px-2 py-1 rounded-md text-sm">0 คน</span>
-                </h3>
+                <h3 class="font-bold text-lg text-slate-700 mb-4 flex items-center gap-2">📋 รายชื่อที่รอเรียกซ้ำ <span id="skipCount" class="bg-orange-100 text-orange-600 px-2 py-1 rounded-md text-sm">0 คน</span></h3>
                 <ul id="skippedList" class="space-y-3"></ul>
             </div>
         </div>
-
-        <footer class="text-center text-sm font-semibold text-slate-500 pb-8">
-            © สงวนลิขสิทธิ์ ออกแบบและพัฒนาโดยห้องเวชระเบียนผู้ป่วยนอกโรงพยาบาลพะเยา
-        </footer>
+        <footer class="text-center text-sm font-semibold text-slate-500 pb-8">© สงวนลิขสิทธิ์ ออกแบบและพัฒนาโดยห้องเวชระเบียนผู้ป่วยนอกโรงพยาบาลพะเยา</footer>
     </div>
 
     <script type="module">
@@ -112,53 +100,41 @@
             if (this.value.trim() === "") { lastCalledName = ""; }
         });
 
-        // ตรวจสอบวันที่เพื่อล้างข้อมูลอัตโนมัติ (Smart Auto-Clear)
         async function checkAndAutoClearData() {
             const today = new Date().toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok' });
             const dateRef = ref(db, 'live/lastClearDate');
             const snap = await get(dateRef);
-            
             if (snap.val() !== today) {
-                // ถ้าวันที่ในระบบไม่ตรงกับวันนี้ ให้ลบข้อมูลเก่าและเซ็ตวันที่ใหม่
                 await remove(ref(db, 'live/calls'));
                 await set(dateRef, today);
-                console.log("Auto-cleared old data for a new day!");
             }
         }
 
-        // ดึงสถิติมาแสดง
         function loadStaffStats() {
             onValue(ref(db, 'live/calls'), (snapshot) => {
                 const statsContainer = document.getElementById('staffStatsContainer');
                 statsContainer.innerHTML = '';
                 if (!snapshot.exists()) {
-                    statsContainer.innerHTML = '<p class="text-slate-500 italic col-span-4 text-center py-4">ยังไม่มีประวัติการเรียกคิวในวันนี้</p>';
+                    statsContainer.innerHTML = '<p class="text-slate-500 italic col-span-4 text-center py-4">ยังไม่มีประวัติการเรียกคิว</p>';
                     return;
                 }
-
                 const stats = {};
                 snapshot.forEach(child => {
                     const cName = child.val().counterName;
                     stats[cName] = (stats[cName] || 0) + 1;
                 });
-
-                // เรียงให้ช่องของตัวเองมาอยู่หน้าสุด
                 const statsArray = Object.entries(stats).sort((a, b) => {
                     if (a[0] === myCounterName) return -1;
                     if (b[0] === myCounterName) return 1;
                     return b[1] - a[1];
                 });
-
                 statsArray.forEach(([name, count]) => {
                     const isMine = (name === myCounterName);
                     const div = document.createElement('div');
-                    
                     if (isMine) {
-                        // ช่องตัวเอง: สีน้ำเงินเข้ม ใหญ่พิเศษ
                         div.className = "bg-blue-600 p-4 rounded-xl text-center shadow-lg transform scale-105 ring-4 ring-blue-200 flex flex-col justify-center z-10";
                         div.innerHTML = `<p class="text-xs text-blue-100 font-bold mb-1">⭐ ${name}</p><p class="text-4xl font-bold text-white">${count}</p>`;
                     } else {
-                        // ช่องคนอื่น: สีเทาอ่อน
                         div.className = "bg-slate-50 p-4 rounded-xl text-center border border-slate-200 shadow-sm flex flex-col justify-center opacity-90";
                         div.innerHTML = `<p class="text-xs text-slate-500 font-bold mb-1">${name}</p><p class="text-2xl font-bold text-slate-700">${count}</p>`;
                     }
@@ -179,11 +155,8 @@
                         loginSection.classList.add('hidden');
                         staffApp.classList.remove('hidden');
                         staffApp.classList.add('flex');
-                        
-                        // เริ่มทำงานฟังก์ชันใหม่
                         await checkAndAutoClearData();
                         loadStaffStats();
-                        
                         setTimeout(() => patientNameInput.focus(), 500);
                     }
                 } else { alert("สิทธิ์ไม่ถูกต้อง"); signOut(auth); }
@@ -196,7 +169,7 @@
 
         document.getElementById('loginBtn').onclick = () => {
             signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value)
-                .catch(e => alert("อีเมลหรือรหัสผ่านไม่ถูกต้อง"));
+                .catch(e => alert("เข้าสู่ระบบล้มเหลว"));
         };
 
         patientNameInput.addEventListener('keypress', function (e) {
@@ -205,28 +178,21 @@
 
         document.getElementById('logoutBtn').onclick = () => {
             signOut(auth);
-            patientNameInput.value = '';
-            skippedList.innerHTML = '';
-            skippedCount = 0;
-            lastCalledName = "";
+            patientNameInput.value = ''; skippedList.innerHTML = ''; skippedCount = 0; lastCalledName = "";
             document.getElementById('skipCount').innerText = "0 คน";
         };
 
         const pushToDisplay = (name, type) => {
             push(ref(db, 'live/calls'), {
-                name: name,
-                counterName: myCounterName,
-                timestamp: Date.now(),
-                type: type
+                name: name, counterName: myCounterName, timestamp: Date.now(), type: type
             });
         };
 
         document.getElementById('callBtn').onclick = () => {
             const name = patientNameInput.value.trim();
-            if (!name) { alert("กรุณาพิมพ์ชื่อผู้รับบริการ"); patientNameInput.focus(); return; }
+            if (!name) { patientNameInput.focus(); return; }
             if (name === lastCalledName) {
-                alert("⚠️ คุณเพิ่งเรียกชื่อนี้ไปแล้วครับ!\n\nหากผู้รับบริการยังไม่มา ให้กดปุ่ม [⏭️ พักคิวไว้ก่อน] แล้วใช้ปุ่มเรียกซ้ำจากรายการด้านล่างแทนครับ");
-                return;
+                alert("⚠️ เพิ่งเรียกชื่อนี้ไปครับ ให้ใช้ปุ่ม พักคิว แล้วกดเรียกซ้ำจากด้านล่างแทน"); return;
             }
             pushToDisplay(name, 'new');
             lastCalledName = name; 
@@ -235,39 +201,30 @@
         document.getElementById('skipBtn').onclick = () => {
             const name = patientNameInput.value.trim();
             if (!name) { patientNameInput.focus(); return; }
-
             skippedCount++;
             document.getElementById('skipCount').innerText = `${skippedCount} คน`;
 
             const li = document.createElement('li');
-            li.className = "flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 border-2 border-slate-100 rounded-xl shadow-sm gap-3 transition hover:border-blue-200";
-
+            li.className = "flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 border-2 border-slate-100 rounded-xl shadow-sm gap-3";
             const nameSpan = document.createElement('span');
-            nameSpan.className = "font-bold text-lg text-slate-700";
-            nameSpan.innerText = name;
+            nameSpan.className = "font-bold text-lg text-slate-700"; nameSpan.innerText = name;
 
             const actionDiv = document.createElement('div');
             actionDiv.className = "flex gap-2 w-full sm:w-auto";
 
             const recallBtn = document.createElement('button');
-            recallBtn.className = "flex-1 sm:flex-none bg-orange-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-400 shadow active:scale-95 transition";
+            recallBtn.className = "flex-1 sm:flex-none bg-orange-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-400 active:scale-95";
             recallBtn.innerText = "🔄 เรียกซ้ำ";
             recallBtn.onclick = () => pushToDisplay(name, 'recall');
 
             const doneBtn = document.createElement('button');
-            doneBtn.className = "flex-1 sm:flex-none bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-bold hover:bg-green-500 hover:text-white shadow active:scale-95 transition";
+            doneBtn.className = "flex-1 sm:flex-none bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-bold hover:bg-green-500 hover:text-white active:scale-95";
             doneBtn.innerText = "✅ เสร็จสิ้น";
             doneBtn.onclick = () => { li.remove(); skippedCount--; document.getElementById('skipCount').innerText = `${skippedCount} คน`; };
 
-            actionDiv.appendChild(recallBtn);
-            actionDiv.appendChild(doneBtn);
-            li.appendChild(nameSpan);
-            li.appendChild(actionDiv);
+            actionDiv.appendChild(recallBtn); actionDiv.appendChild(doneBtn); li.appendChild(nameSpan); li.appendChild(actionDiv);
             document.getElementById('skippedList').prepend(li);
-
-            patientNameInput.value = '';
-            lastCalledName = ""; 
-            patientNameInput.focus();
+            patientNameInput.value = ''; lastCalledName = ""; patientNameInput.focus();
         };
     </script>
 </body>
