@@ -6,18 +6,18 @@
     <title>หน้าจอแสดงคิว</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+    
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=YOUR_API_KEY_HERE"></script>
+    
     <style>
         body { font-family: 'Sarabun', sans-serif; overflow: hidden; }
         .blink { animation: blinker 2s linear infinite; }
         @keyframes blinker { 50% { opacity: 0.3; } }
-        /* พื้นหลังแบบไล่สีสะอาดตา */
         .bg-medical { background: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 100%); }
     </style>
 </head>
 <body class="bg-medical text-gray-800 h-screen flex flex-col relative">
     
-    <!-- ปุ่มปลดล็อกระบบเสียง -->
     <div id="startOverlay" class="absolute inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center">
         <h2 class="text-white text-2xl mb-8">ระบบเรียกชื่อผู้รับบริการ</h2>
         <button id="startBtn" class="bg-blue-600 text-white text-4xl px-12 py-6 rounded-2xl shadow-lg hover:bg-blue-500 hover:scale-105 transition">
@@ -25,14 +25,10 @@
         </button>
     </div>
 
-    <!-- Header: โลโก้, ชื่อหน่วยงาน และ นาฬิกา -->
     <header class="bg-white shadow-md py-4 px-8 flex justify-between items-center border-b-4 border-blue-600">
         <div class="flex items-center gap-4">
-            <!-- โลโก้กากบาททางการแพทย์ (SVG) สามารถเปลี่ยน src เป็นรูปอื่นได้ -->
             <div class="bg-blue-600 p-2 rounded-full text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
             </div>
             <div>
                 <h1 class="text-2xl md:text-3xl font-bold text-blue-900 tracking-wide">แผนกเวชระเบียน โรงพยาบาลพะเยา</h1>
@@ -44,28 +40,20 @@
         </div>
     </header>
 
-    <!-- Main Content: ชื่อคิวปัจจุบัน -->
     <main class="flex-1 flex flex-col justify-center items-center px-4">
         <p class="text-4xl text-slate-500 mb-6 font-bold tracking-widest">ขอเชิญผู้รับบริการ</p>
-        
         <div class="bg-white border-4 border-blue-200 rounded-[3rem] p-16 shadow-2xl w-full max-w-5xl text-center">
-            <h1 id="displayName" class="text-7xl md:text-[6.5rem] font-bold text-blue-900 mb-10 truncate blink leading-tight">
-                -- ว่าง --
-            </h1>
+            <h1 id="displayName" class="text-7xl md:text-[6.5rem] font-bold text-blue-900 mb-10 truncate blink leading-tight">-- ว่าง --</h1>
             <div class="inline-block bg-blue-700 px-16 py-6 rounded-full shadow-lg">
                 <h2 id="displayCounter" class="text-5xl md:text-6xl font-bold text-yellow-300">กรุณารอเรียกชื่อ</h2>
             </div>
         </div>
     </main>
 
-    <!-- Footer: ประวัติคิวล่าสุด 4 รายการ -->
     <footer class="bg-slate-800 text-white p-4 shadow-inner mt-auto">
         <div class="flex items-center gap-4 max-w-7xl mx-auto">
-            <div class="bg-slate-700 px-4 py-2 rounded-lg font-bold whitespace-nowrap text-lg">
-                📋 เรียกล่าสุด:
-            </div>
+            <div class="bg-slate-700 px-4 py-2 rounded-lg font-bold whitespace-nowrap text-lg">📋 เรียกล่าสุด:</div>
             <div id="recentList" class="flex gap-4 overflow-hidden text-xl font-semibold text-slate-300 w-full">
-                <!-- รายชื่อล่าสุดจะแสดงตรงนี้ -->
                 <span class="text-slate-500 italic">ยังไม่มีการเรียกคิว</span>
             </div>
         </div>
@@ -88,31 +76,46 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // ระบบเวลาเรียลไทม์
         setInterval(() => {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('th-TH');
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH');
         }, 1000);
 
-        // ระบบคิวและประวัติ
         let callQueue = [];
         let isSpeaking = false;
-        let recentCalls = []; // เก็บประวัติ 4 คิวล่าสุด
+        let recentCalls = []; 
         const loadTime = Date.now(); 
 
-        // โหลดไฟล์เสียง ติ๊ง-ต่อง (Google Free Sound)
-        const dingDongSound = new Audio('https://actions.google.com/sounds/v1/alarms/ding_dong.ogg');
+        // สร้างเสียงติ๊งต่องด้วยคณิตศาสตร์ (ไม่มีวันพัง ไม่มี Error CORS)
+        function playSynthesizedChime() {
+            return new Promise((resolve) => {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(987.77, ctx.currentTime); // Note B5
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.4); // Note E5
+                    gain.gain.setValueAtTime(0, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.05);
+                    gain.gain.setValueAtTime(0.5, ctx.currentTime + 0.35);
+                    gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.4);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.2);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 1.2);
+                    setTimeout(resolve, 1300);
+                } catch (e) {
+                    resolve(); // ถ้าเบราว์เซอร์ไม่รองรับ ให้ข้ามไปพูดเลย ระบบจะไม่ค้าง
+                }
+            });
+        }
 
         document.getElementById('startBtn').onclick = () => {
             document.getElementById('startOverlay').style.display = 'none';
-
-            // ปลดล็อกระบบเสียง
-            dingDongSound.volume = 0;
-            dingDongSound.play().then(() => { dingDongSound.pause(); dingDongSound.volume = 1; });
             if (typeof responsiveVoice !== 'undefined') {
                 responsiveVoice.speak(" ", "Thai Female", {volume: 0});
             }
-
             const callsRef = query(ref(db, 'live/calls'), orderByChild('timestamp'), startAt(loadTime));
             onChildAdded(callsRef, (snapshot) => {
                 callQueue.push(snapshot.val());
@@ -121,12 +124,10 @@
         };
 
         function updateRecentList(name, counterName) {
-            // ลบคำว่า "ช่องที่" ออกถ้ามี เพื่อความสั้นกระชับในแถบประวัติ
             const shortCounter = counterName.replace('ช่องบริการที่', 'ช่อง').replace('ช่องที่', 'ช่อง');
             recentCalls.unshift(`<span class="text-white">${name}</span> <span class="text-yellow-400">(${shortCounter})</span>`);
-            if (recentCalls.length > 4) recentCalls.pop(); // เก็บแค่ 4 รายการ
-            
-            document.getElementById('recentList').innerHTML = recentCalls.map((item, index) => 
+            if (recentCalls.length > 4) recentCalls.pop(); 
+            document.getElementById('recentList').innerHTML = recentCalls.map(item => 
                 `<div class="bg-slate-700 px-4 py-1 rounded-lg border border-slate-600">${item}</div>`
             ).join('');
         }
@@ -136,38 +137,51 @@
             isSpeaking = true;
             
             const data = callQueue.shift();
-            
-            // เปลี่ยนหน้าจอหลัก
             document.getElementById('displayName').innerText = data.name;
             document.getElementById('displayCounter').innerText = "ที่ " + data.counterName;
-            
-            // อัปเดตประวัติแถบด้านล่าง
             updateRecentList(data.name, data.counterName);
             
-            // 1. เล่นเสียงติ๊งต่องก่อน
-            dingDongSound.currentTime = 0;
-            dingDongSound.play();
-
-            // 2. เมื่อเสียงติ๊งต่องจบ ให้พูดชื่อทันที
-            dingDongSound.onended = () => {
+            // เล่นเสียงติ๊งต่อง
+            playSynthesizedChime().then(() => {
                 const textToSpeak = `ขอเชิญคุณ ${data.name} ที่ ${data.counterName} ค่ะ`;
                 
-                if (typeof responsiveVoice !== 'undefined') {
-                    responsiveVoice.speak(textToSpeak, "Thai Female", {
-                        rate: 0.75,
-                        pitch: 1,
-                        volume: 1,
-                        onend: () => {
-                            setTimeout(() => {
-                                isSpeaking = false;
-                                processQueue();
-                            }, 1500); 
-                        }
-                    });
+                // ตั้งเวลา Safety Net 6 วินาที ป้องกัน ResponsiveVoice ค้าง
+                const safetyTimer = setTimeout(() => {
+                    isSpeaking = false; processQueue();
+                }, 6000);
+
+                if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
+                    try {
+                        responsiveVoice.speak(textToSpeak, "Thai Female", {
+                            rate: 0.75, pitch: 1, volume: 1,
+                            onend: () => {
+                                clearTimeout(safetyTimer);
+                                setTimeout(() => { isSpeaking = false; processQueue(); }, 1500);
+                            }
+                        });
+                    } catch (e) {
+                        fallbackSpeak(textToSpeak, safetyTimer);
+                    }
                 } else {
-                    setTimeout(() => { isSpeaking = false; processQueue(); }, 1500);
+                    fallbackSpeak(textToSpeak, safetyTimer);
                 }
+            });
+        }
+
+        // ฟังก์ชันอ่านเสียงสำรอง (เมื่อ ResponsiveVoice ถูกบล็อก)
+        function fallbackSpeak(text, safetyTimer) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'th-TH';
+            utterance.rate = 0.75;
+            utterance.onend = () => {
+                clearTimeout(safetyTimer);
+                setTimeout(() => { isSpeaking = false; processQueue(); }, 1500);
             };
+            utterance.onerror = () => {
+                clearTimeout(safetyTimer);
+                isSpeaking = false; processQueue();
+            };
+            window.speechSynthesis.speak(utterance);
         }
     </script>
 </body>
