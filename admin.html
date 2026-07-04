@@ -9,49 +9,67 @@
     <style>body { font-family: 'Sarabun', sans-serif; }</style>
 </head>
 <body class="bg-gray-100 min-h-screen p-6">
-    <div id="app" class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md hidden">
+    <div id="app" class="max-w-5xl mx-auto bg-white p-8 rounded-xl shadow-md hidden flex-col">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-blue-700">⚙️ Admin Panel</h1>
-            <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">ออกจากระบบ</button>
+            <h1 class="text-3xl font-bold text-blue-700">⚙️ Admin Panel</h1>
+            <button id="logoutBtn" class="bg-red-50 text-red-500 px-4 py-2 rounded-lg font-bold hover:bg-red-100 transition">ออกจากระบบ</button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="border p-6 rounded-lg bg-gray-50">
-                <h2 class="text-xl font-semibold mb-4">1. เพิ่มช่องบริการ</h2>
+            
+            <div class="border p-6 rounded-xl bg-slate-50 md:col-span-2 shadow-sm">
+                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <h2 class="text-xl font-bold text-slate-700">📊 สถิติการเรียกคิวประจำวัน</h2>
+                    <button id="clearDataBtn" class="bg-red-600 text-white px-5 py-2 rounded-lg font-bold shadow hover:bg-red-700 active:scale-95 transition flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                        ล้างข้อมูลจบวัน
+                    </button>
+                </div>
+                <div id="statsContainer" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <p class="text-slate-500 italic col-span-4 text-center py-4">กำลังโหลดสถิติ...</p>
+                </div>
+            </div>
+
+            <div class="border p-6 rounded-xl bg-white shadow-sm">
+                <h2 class="text-xl font-bold text-slate-700 mb-4">1. เพิ่มช่องบริการ</h2>
                 <div class="flex gap-2 mb-4">
-                    <input type="text" id="counterName" placeholder="เช่น ช่องที่ 1, เภสัชกรรม" class="border p-2 rounded w-full">
-                    <button id="addCounterBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">เพิ่ม</button>
+                    <input type="text" id="counterName" placeholder="เช่น ช่องที่ 1, เภสัชกรรม" class="border-2 p-2 rounded-lg w-full focus:border-blue-500 outline-none">
+                    <button id="addCounterBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">เพิ่ม</button>
                 </div>
                 <ul id="counterList" class="space-y-2 max-h-48 overflow-y-auto"></ul>
             </div>
 
-            <div class="border p-6 rounded-lg bg-gray-50">
-                <h2 class="text-xl font-semibold mb-4">2. เพิ่มพนักงาน (Staff)</h2>
-                <input type="email" id="staffEmail" placeholder="อีเมลพนักงาน" class="border p-2 rounded w-full mb-2">
-                <input type="password" id="staffPass" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" class="border p-2 rounded w-full mb-2">
-                <select id="staffCounter" class="border p-2 rounded w-full mb-4">
+            <div class="border p-6 rounded-xl bg-white shadow-sm">
+                <h2 class="text-xl font-bold text-slate-700 mb-4">2. สร้างบัญชีพนักงาน</h2>
+                <input type="email" id="staffEmail" placeholder="อีเมลพนักงาน (เช่น staff1@mail.com)" class="border-2 p-2 rounded-lg w-full mb-3 focus:border-blue-500 outline-none">
+                <input type="password" id="staffPass" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" class="border-2 p-2 rounded-lg w-full mb-3 focus:border-blue-500 outline-none">
+                <select id="staffCounter" class="border-2 p-2 rounded-lg w-full mb-4 focus:border-blue-500 outline-none bg-white">
                     <option value="">-- เลือกช่องบริการประจำ --</option>
                 </select>
-                <button id="addStaffBtn" class="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700">สร้างบัญชีพนักงาน</button>
-                <div id="staffStatus" class="mt-2 text-sm"></div>
+                <button id="addStaffBtn" class="bg-green-600 text-white px-4 py-3 rounded-lg w-full font-bold hover:bg-green-700 transition shadow">เพิ่มบัญชีพนักงาน</button>
+                <div id="staffStatus" class="mt-3 text-sm text-center font-semibold"></div>
             </div>
         </div>
+
+        <footer class="text-center text-sm font-semibold text-slate-500 mt-8 border-t pt-4">
+            © สงวนลิขสิทธิ์ ออกแบบและพัฒนาโดยห้องเวชระเบียนผู้ป่วยนอกโรงพยาบาลพะเยา
+        </footer>
     </div>
 
-    <div id="authSection" class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-md mt-20">
-        <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">ผู้ดูแลระบบ</h1>
-        <input type="email" id="authEmail" placeholder="อีเมล" class="border p-2 rounded w-full mb-4">
-        <input type="password" id="authPass" placeholder="รหัสผ่าน" class="border p-2 rounded w-full mb-6">
+    <div id="authSection" class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl mt-20 border-t-4 border-blue-600">
+        <h1 class="text-2xl font-bold text-center mb-6 text-blue-900">ผู้ดูแลระบบ</h1>
+        <input type="email" id="authEmail" placeholder="อีเมล" class="border-2 p-3 rounded-lg w-full mb-4 outline-none focus:border-blue-500">
+        <input type="password" id="authPass" placeholder="รหัสผ่าน" class="border-2 p-3 rounded-lg w-full mb-6 outline-none focus:border-blue-500">
         <div class="flex gap-4">
-            <button id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded w-full">เข้าสู่ระบบ</button>
-            <button id="registerBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded w-full text-sm">ลงทะเบียน Admin แรก</button>
+            <button id="loginBtn" class="bg-blue-600 text-white px-4 py-3 rounded-lg w-full font-bold hover:bg-blue-700 transition">เข้าสู่ระบบ</button>
+            <button id="registerBtn" class="bg-slate-100 text-slate-600 px-4 py-3 rounded-lg w-full font-semibold hover:bg-slate-200 transition text-sm">ลงทะเบียน Admin แรก</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAUg9GVdMIYVX4M6w2K4gMVdYy3YlbowxU",
@@ -60,37 +78,80 @@
             projectId: "ne-q-3e0b7",
             storageBucket: "ne-q-3e0b7.firebasestorage.app",
             messagingSenderId: "559471760244",
-            appId: "1:559471760244:web:0d1721ae633f26b3a29221",
-            measurementId: "G-8NCWYGGXLZ"
+            appId: "1:559471760244:web:0d1721ae633f26b3a29221"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
-
-        // Secondary App สำหรับให้ Admin สร้างบัญชี Staff โดยที่ Admin ไม่หลุดจากระบบ
+        
         const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
         const secondaryAuth = getAuth(secondaryApp);
 
-        // UI Elements
         const appDiv = document.getElementById('app');
         const authSection = document.getElementById('authSection');
         const counterList = document.getElementById('counterList');
         const staffCounterSelect = document.getElementById('staffCounter');
+        const statsContainer = document.getElementById('statsContainer');
 
-        // Auth State
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 authSection.classList.add('hidden');
                 appDiv.classList.remove('hidden');
+                appDiv.classList.add('flex');
                 loadCounters();
+                loadStats();
             } else {
                 authSection.classList.remove('hidden');
                 appDiv.classList.add('hidden');
+                appDiv.classList.remove('flex');
             }
         });
 
-        // Register First Admin
+        function loadStats() {
+            onValue(ref(db, 'live/calls'), (snapshot) => {
+                statsContainer.innerHTML = '';
+                if (!snapshot.exists()) {
+                    statsContainer.innerHTML = '<p class="text-slate-500 italic col-span-4 text-center py-4">ยังไม่มีประวัติการเรียกคิวในวันนี้</p>';
+                    return;
+                }
+
+                const stats = {};
+                let totalCalls = 0;
+
+                snapshot.forEach(child => {
+                    const data = child.val();
+                    const cName = data.counterName;
+                    stats[cName] = (stats[cName] || 0) + 1;
+                    totalCalls++;
+                });
+
+                const totalDiv = document.createElement('div');
+                totalDiv.className = "bg-blue-100 p-4 rounded-xl text-center border-2 border-blue-200 shadow-sm flex flex-col justify-center";
+                totalDiv.innerHTML = `<p class="text-sm text-blue-700 font-bold mb-1">รวมทุกช่องบริการ</p><p class="text-4xl font-bold text-blue-900">${totalCalls} <span class="text-lg">คิว</span></p>`;
+                statsContainer.appendChild(totalDiv);
+
+                for (const [name, count] of Object.entries(stats)) {
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-4 rounded-xl text-center border border-slate-200 shadow-sm flex flex-col justify-center";
+                    div.innerHTML = `<p class="text-sm text-slate-600 font-bold mb-1">${name}</p><p class="text-3xl font-bold text-slate-800">${count}</p>`;
+                    statsContainer.appendChild(div);
+                }
+            });
+        }
+
+        document.getElementById('clearDataBtn').onclick = async () => {
+            const confirmMsg = "⚠️ ยืนยันการล้างข้อมูลประจำวัน?\n\nประวัติสถิติและรายชื่อการเรียกคิวของวันนี้จะถูกลบทิ้งทั้งหมด เพื่อเตรียมระบบให้เบาและรวดเร็วสำหรับวันพรุ่งนี้ (ไม่สามารถกู้คืนได้)";
+            if(confirm(confirmMsg)) {
+                try {
+                    await remove(ref(db, 'live/calls'));
+                    alert("✅ ล้างข้อมูลประวัติคิวเรียบร้อยแล้วครับ ระบบพร้อมสำหรับวันพรุ่งนี้!");
+                } catch(e) {
+                    alert("เกิดข้อผิดพลาดในการล้างข้อมูล: " + e.message);
+                }
+            }
+        };
+
         document.getElementById('registerBtn').onclick = async () => {
             const email = document.getElementById('authEmail').value;
             const pass = document.getElementById('authPass').value;
@@ -101,38 +162,35 @@
             } catch (e) { alert(e.message); }
         };
 
-        // Login Admin
         document.getElementById('loginBtn').onclick = async () => {
             try {
                 await signInWithEmailAndPassword(auth, document.getElementById('authEmail').value, document.getElementById('authPass').value);
             } catch (e) { alert("เข้าสู่ระบบล้มเหลว: " + e.message); }
         };
 
-        // Logout
         document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
-        // Add Counter
         document.getElementById('addCounterBtn').onclick = async () => {
             const name = document.getElementById('counterName').value.trim();
             if(!name) return;
-            const newRef = push(ref(db, 'counters'));
-            await set(newRef, { id: newRef.key, name: name });
-            document.getElementById('counterName').value = '';
+            try {
+                const newRef = push(ref(db, 'counters'));
+                await set(newRef, { id: newRef.key, name: name });
+                document.getElementById('counterName').value = '';
+            } catch (error) { alert("เกิดข้อผิดพลาด: " + error.message); }
         };
 
-        // Load Counters
         function loadCounters() {
             onValue(ref(db, 'counters'), (snapshot) => {
                 counterList.innerHTML = '';
                 staffCounterSelect.innerHTML = '<option value="">-- เลือกช่องบริการประจำ --</option>';
                 snapshot.forEach((child) => {
                     const data = child.val();
-                    // Update List
                     const li = document.createElement('li');
-                    li.className = "bg-white p-2 border rounded text-sm";
+                    li.className = "bg-white p-3 border border-slate-100 rounded-lg text-sm font-semibold text-slate-700 shadow-sm";
                     li.innerText = data.name;
                     counterList.appendChild(li);
-                    // Update Select
+                    
                     const opt = document.createElement('option');
                     opt.value = child.key;
                     opt.innerText = data.name;
@@ -141,7 +199,6 @@
             });
         }
 
-        // Add Staff
         document.getElementById('addStaffBtn').onclick = async () => {
             const email = document.getElementById('staffEmail').value;
             const pass = document.getElementById('staffPass').value;
@@ -149,13 +206,12 @@
             const status = document.getElementById('staffStatus');
             
             if(!email || !pass || !counterId) {
-                status.innerText = "กรุณากรอกข้อมูลให้ครบ";
-                status.className = "mt-2 text-sm text-red-500";
+                status.innerText = "กรุณากรอกข้อมูลให้ครบทุกช่อง";
+                status.className = "mt-3 text-sm text-red-500 font-semibold";
                 return;
             }
-
             status.innerText = "กำลังสร้าง...";
-            status.className = "mt-2 text-sm text-blue-500";
+            status.className = "mt-3 text-sm text-blue-500 font-semibold";
             
             try {
                 const cred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
@@ -164,13 +220,13 @@
                     counterId: counterId
                 });
                 await signOut(secondaryAuth);
-                status.innerText = "สร้างบัญชีพนักงานสำเร็จ!";
-                status.className = "mt-2 text-sm text-green-500";
+                status.innerText = "✅ สร้างบัญชีพนักงานสำเร็จ!";
+                status.className = "mt-3 text-sm text-green-600 font-bold";
                 document.getElementById('staffEmail').value = '';
                 document.getElementById('staffPass').value = '';
             } catch (e) {
                 status.innerText = "Error: " + e.message;
-                status.className = "mt-2 text-sm text-red-500";
+                status.className = "mt-3 text-sm text-red-500 font-semibold";
             }
         };
     </script>
