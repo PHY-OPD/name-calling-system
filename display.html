@@ -3,97 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Display - หน้าจอแสดงคิว</title>
+    <title>หน้าจอแสดงคิว</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=RumgqmVn"></script>
+    
     <style>
         body { font-family: 'Sarabun', sans-serif; overflow: hidden; }
-        .blink { animation: blinker 1.5s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
-        .marquee-container { overflow: hidden; white-space: nowrap; width: 100%; }
-        .marquee-text { display: inline-block; animation: marquee 15s linear infinite; }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        
-        /* ป้องกันสระจมด้วย line-height และ padding */
-        .name-text { line-height: 1.4 !important; padding-bottom: 1.5rem; }
-        
-        /* แอนิเมชันสำหรับช่องประวัติเรียกล่าสุด */
-        .animate-fade-in-right { animation: fadeInRight 0.5s ease-out forwards; }
-        @keyframes fadeInRight {
-            0% { opacity: 0; transform: translateX(20px); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
+        .blink { animation: blinker 2s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.3; } }
+        .bg-medical { background: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 100%); }
     </style>
 </head>
-<body class="bg-slate-50 h-screen flex flex-col">
+<body class="bg-medical text-gray-800 h-screen flex flex-col relative">
+    
+    <div id="startOverlay" class="absolute inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center">
+        <h2 class="text-white text-3xl mb-10 font-bold tracking-wide">ระบบเรียกชื่อผู้รับบริการ</h2>
+        <button id="startBtn" class="bg-blue-600 text-white text-4xl px-12 py-6 rounded-2xl shadow-[0_0_30px_rgba(37,99,235,0.5)] hover:bg-blue-500 hover:scale-105 transition">
+            ▶ เริ่มระบบประกาศเสียง
+        </button>
+        <button id="testSoundBtn" class="mt-8 text-slate-400 hover:text-white border-2 border-slate-600 hover:border-slate-400 px-6 py-3 rounded-full text-xl transition flex items-center gap-2">
+            🔊 ทดสอบเสียงลำโพง
+        </button>
+    </div>
 
-    <!-- Header -->
-    <header class="bg-white p-4 shadow-md flex justify-between items-center z-10 border-b-4 border-blue-600">
+    <header class="bg-white shadow-md py-4 px-8 flex justify-between items-center border-b-4 border-blue-600 z-30">
         <div class="flex items-center gap-4">
-            <div class="bg-blue-600 text-white p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            <div class="bg-blue-600 p-2 rounded-full text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
             </div>
             <div>
-                <h1 class="text-3xl font-bold text-blue-900">แผนกเวชระเบียน โรงพยาบาลพะเยา</h1>
+                <h1 class="text-2xl md:text-3xl font-bold text-blue-900 tracking-wide">แผนกเวชระเบียน โรงพยาบาลพะเยา</h1>
                 <p class="text-blue-600 font-semibold">ระบบเรียกชื่อผู้รับบริการ</p>
             </div>
         </div>
+        
         <div class="flex items-center gap-6">
-            <div id="networkStatus" class="flex items-center gap-2 text-sm font-bold text-slate-500 px-4 py-2 rounded-full border transition-colors duration-300">
-                <span class="w-3 h-3 rounded-full bg-slate-400"></span> รอการเชื่อมต่อ...
+            <div id="networkStatus" class="flex items-center gap-2 text-sm font-bold text-slate-500 bg-slate-100 px-4 py-2 rounded-full border border-slate-200 shadow-sm transition-colors duration-300">
+                <span class="w-3 h-3 rounded-full bg-slate-400"></span> กำลังเชื่อมต่อ...
             </div>
-            <div class="text-4xl font-bold text-slate-800 bg-slate-100 px-6 py-2 rounded-xl shadow-inner border" id="clock">00:00:00</div>
+            <div class="text-3xl font-bold text-slate-700 bg-slate-100 px-6 py-2 rounded-xl border shadow-inner" id="clock">
+                00:00:00
+            </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col items-center justify-center p-8 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+    <main class="flex-1 flex flex-col justify-center items-center px-4 relative">
+        <p class="text-4xl text-slate-500 mb-6 font-bold tracking-widest">ขอเชิญผู้รับบริการ</p>
         
-        <div id="mainDisplay" class="bg-white w-full max-w-5xl rounded-[3rem] shadow-2xl border-4 border-slate-100 p-16 text-center transform transition-all duration-500 scale-95 opacity-0">
-            <p class="text-4xl font-bold text-slate-500 mb-6">ขอเชิญผู้รับบริการ</p>
+        <div id="mainBox" class="bg-white border-4 border-blue-200 rounded-[3rem] p-16 shadow-2xl w-full max-w-5xl text-center relative transition-colors duration-500">
             
-            <!-- ชื่อผู้รับบริการ (แก้ไขการตัดคำและสระจมแล้ว) -->
-            <h1 id="displayName" class="text-7xl md:text-[6.5rem] font-bold text-blue-900 mb-8 break-words blink name-text transition-colors duration-500">
-                ---
+            <div id="recallBadge" class="hidden absolute -top-8 -right-8 bg-orange-500 text-white px-8 py-3 rounded-full text-3xl font-bold shadow-xl animate-bounce border-4 border-white z-10">
+                🔄 เรียกซ้ำ
+            </div>
+
+            <h1 id="displayName" class="text-7xl md:text-[6.5rem] font-bold text-blue-900 mb-10 truncate blink leading-tight transition-colors duration-500">
+                -- ว่าง --
             </h1>
-            
-            <div class="flex items-center justify-center gap-6 mt-8">
-                <span class="text-4xl font-bold text-slate-500">ที่</span>
-                <div id="displayCounterBox" class="bg-blue-600 text-white px-10 py-4 rounded-full text-5xl font-bold shadow-lg transition-colors duration-500">
-                    ช่องบริการ ---
-                </div>
+            <div id="counterBubble" class="inline-block bg-blue-700 px-16 py-6 rounded-full shadow-lg transition-colors duration-500">
+                <h2 id="displayCounter" class="text-5xl md:text-6xl font-bold text-yellow-300">กรุณารอเรียกชื่อ</h2>
             </div>
         </div>
-
-        <div id="idleDisplay" class="text-center absolute">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-40 w-40 text-slate-200 mx-auto mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-            <h2 class="text-4xl font-bold text-slate-400">จุดรับบริการเวชระเบียน</h2>
-            <p class="text-2xl text-slate-400 mt-2">กรุณารอสักครู่ ระบบกำลังจะเรียกคิวต่อไป</p>
-        </div>
-
     </main>
 
-    <!-- Footer History & Marquee -->
-    <footer class="bg-slate-900 text-white flex flex-col z-10 shadow-2xl">
-        <!-- History Bar -->
-        <div class="bg-slate-800 border-b border-slate-700 px-6 py-3 flex items-center gap-4 overflow-hidden">
-            <div class="flex items-center gap-2 text-slate-300 font-bold whitespace-nowrap bg-slate-700 px-3 py-1 rounded-md text-sm">
-                📋 เรียกล่าสุด:
-            </div>
-            <div id="historyContainer" class="flex gap-4 overflow-hidden w-full items-center">
-                <p class="text-slate-500 text-sm italic">ยังไม่มีข้อมูลการเรียก...</p>
+    <footer class="bg-slate-800 text-white p-4 shadow-inner mt-auto flex flex-col justify-center z-30">
+        <div class="flex items-center gap-4 max-w-7xl mx-auto w-full mb-2">
+            <div class="bg-slate-700 px-4 py-2 rounded-lg font-bold whitespace-nowrap text-lg">📋 เรียกล่าสุด:</div>
+            <div id="recentList" class="flex gap-4 overflow-hidden text-xl font-semibold text-slate-300 w-full">
+                <span class="text-slate-500 italic">ยังไม่มีการเรียกคิว</span>
             </div>
         </div>
-        <!-- Marquee Bar -->
-        <div class="bg-blue-800 text-white text-3xl font-bold py-4 marquee-container shadow-inner border-t border-blue-700">
-            <span id="marqueeText" class="marquee-text">ยินดีต้อนรับสู่แผนกเวชระเบียน โรงพยาบาลพะเยา - เราพร้อมให้บริการท่านด้วยความเต็มใจ</span>
+        <div class="text-xs text-slate-400 text-center mt-2 border-t border-slate-700 pt-2 w-full max-w-7xl mx-auto opacity-70">
+            © สงวนลิขสิทธิ์ ออกแบบและพัฒนาโดยห้องเวชระเบียนผู้ป่วยนอกโรงพยาบาลพะเยา
         </div>
     </footer>
 
-    <!-- Firebase & Logic -->
+    <div id="marqueeContainer" class="bg-blue-900 text-yellow-300 w-full overflow-hidden border-t-2 border-blue-700 hidden shadow-md z-40">
+        <marquee id="marqueeText" class="py-3 text-2xl font-bold tracking-wider" scrollamount="6"></marquee>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, onChildAdded, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, onChildAdded, onValue, query, orderByChild, startAt } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAUg9GVdMIYVX4M6w2K4gMVdYy3YlbowxU",
@@ -108,129 +100,163 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // นาฬิกา
-        setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH', { hour12: false });
-        }, 1000);
-
-        // สถานะเครือข่าย
-        onValue(ref(db, ".info/connected"), (snap) => {
+        // 📶 ตรวจสอบสถานะการเชื่อมต่ออินเทอร์เน็ต (Firebase Connection State)
+        const connectedRef = ref(db, ".info/connected");
+        onValue(connectedRef, (snap) => {
             const statusDiv = document.getElementById('networkStatus');
             if (snap.val() === true) {
-                statusDiv.innerHTML = '<span class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span> ออนไลน์ (เชื่อมต่อแล้ว)';
-                statusDiv.className = 'flex items-center gap-2 text-sm font-bold text-green-700 bg-green-100 px-4 py-2 rounded-full border border-green-300 shadow-sm';
+                statusDiv.innerHTML = '<span class="w-3 h-3 rounded-full bg-green-500 animate-[pulse_2s_ease-in-out_infinite]"></span> ออนไลน์ (เชื่อมต่อแล้ว)';
+                statusDiv.className = 'flex items-center gap-2 text-sm font-bold text-green-700 bg-green-100 px-4 py-2 rounded-full border border-green-300 shadow-sm transition-colors duration-300';
             } else {
-                statusDiv.innerHTML = '<span class="w-3 h-3 rounded-full bg-red-600 animate-pulse"></span> ออฟไลน์ (กำลังเชื่อมต่อ...)';
-                statusDiv.className = 'flex items-center gap-2 text-sm font-bold text-red-700 bg-red-100 px-4 py-2 rounded-full border border-red-400 shadow-sm';
+                statusDiv.innerHTML = '<span class="w-3 h-3 rounded-full bg-red-600 animate-[pulse_1s_ease-in-out_infinite]"></span> ออฟไลน์ (เน็ตหลุด)';
+                statusDiv.className = 'flex items-center gap-2 text-sm font-bold text-red-700 bg-red-100 px-4 py-2 rounded-full border border-red-400 shadow-md transition-colors duration-300';
             }
         });
 
-        // โหลดข้อความวิ่ง
+        // นาฬิกา
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH'); }, 1000);
+
+        // ดึงข้อความวิ่ง
         onValue(ref(db, 'live/marquee'), (snapshot) => {
-            const val = snapshot.val();
-            document.getElementById('marqueeText').innerText = val ? val : "ยินดีต้อนรับสู่แผนกเวชระเบียน โรงพยาบาลพะเยา";
+            const text = snapshot.val();
+            const container = document.getElementById('marqueeContainer');
+            const marquee = document.getElementById('marqueeText');
+            
+            if (text && text.trim() !== "") {
+                marquee.innerText = text;
+                container.classList.remove('hidden');
+                if (typeof marquee.start === 'function') { marquee.stop(); marquee.start(); }
+            } else {
+                container.classList.add('hidden');
+                if (typeof marquee.stop === 'function') { marquee.stop(); }
+            }
         });
 
-        // 🎨 ฟังก์ชันสุ่มสีประจำช่อง (คำนวณสีให้ตรงกันเป๊ะ)
+        const colorPalette = [
+            { bg: 'bg-blue-700', border: 'border-blue-300', text: 'text-blue-900' },
+            { bg: 'bg-green-700', border: 'border-green-300', text: 'text-green-900' },
+            { bg: 'bg-purple-700', border: 'border-purple-300', text: 'text-purple-900' },
+            { bg: 'bg-pink-600', border: 'border-pink-300', text: 'text-pink-900' },
+            { bg: 'bg-teal-700', border: 'border-teal-300', text: 'text-teal-900' }
+        ];
+
         function getCounterColor(counterName) {
             let hash = 0;
-            for (let i = 0; i < counterName.length; i++) {
-                hash = counterName.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            const colors = [
-                { bg: 'bg-blue-600', text: 'text-blue-400', border: 'border-blue-500/50', mainText: 'text-blue-900' }, 
-                { bg: 'bg-green-600', text: 'text-green-400', border: 'border-green-500/50', mainText: 'text-green-900' }, 
-                { bg: 'bg-teal-600', text: 'text-teal-400', border: 'border-teal-500/50', mainText: 'text-teal-900' }, 
-                { bg: 'bg-purple-600', text: 'text-purple-400', border: 'border-purple-500/50', mainText: 'text-purple-900' }, 
-                { bg: 'bg-pink-600', text: 'text-pink-400', border: 'border-pink-500/50', mainText: 'text-pink-900' }
-            ];
-            return colors[Math.abs(hash) % colors.length];
+            for (let i = 0; i < counterName.length; i++) hash += counterName.charCodeAt(i);
+            return colorPalette[hash % colorPalette.length];
         }
 
-        const queue = [];
-        let isPlaying = false;
-        const mainDisplay = document.getElementById('mainDisplay');
-        const idleDisplay = document.getElementById('idleDisplay');
-        const historyContainer = document.getElementById('historyContainer');
-        
-        let callHistory = []; // เก็บประวัติล่าสุด 4 รายการ
+        let callQueue = [];
+        let isSpeaking = false;
+        let recentCalls = []; 
+        const loadTime = Date.now(); 
 
-        onChildAdded(ref(db, 'live/calls'), (snapshot) => {
-            // ไม่รับข้อมูลเก่าที่เกิดก่อนเปิดหน้าเว็บ (ป้องกันการเรียกย้อนหลังรัวๆ)
-            if (Date.now() - snapshot.val().timestamp < 10000) {
-                queue.push(snapshot.val());
-                if (!isPlaying) processQueue();
-            }
-        });
+        // ระบบเสียงติ๊งต่อง
+        function playSynthesizedChime() {
+            return new Promise((resolve) => {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(987.77, ctx.currentTime); 
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.4); 
+                    gain.gain.setValueAtTime(0, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.05);
+                    gain.gain.setValueAtTime(0.5, ctx.currentTime + 0.35);
+                    gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.4);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.2);
+                    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 1.2);
+                    setTimeout(resolve, 1300);
+                } catch (e) { resolve(); }
+            });
+        }
 
-        async function processQueue() {
-            if (queue.length === 0) {
-                isPlaying = false;
-                mainDisplay.classList.replace('scale-100', 'scale-95');
-                mainDisplay.classList.replace('opacity-100', 'opacity-0');
-                setTimeout(() => idleDisplay.style.display = 'block', 500);
-                return;
-            }
+        // 🔊 สคริปต์ปุ่มทดสอบเสียงลำโพง
+        document.getElementById('testSoundBtn').onclick = () => {
+            playSynthesizedChime().then(() => {
+                if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
+                    responsiveVoice.speak("ทดสอบระบบเสียงลำโพงสำเร็จค่ะ", "Thai Female", {rate: 0.75, pitch: 1, volume: 1});
+                } else {
+                    fallbackSpeak("ทดสอบระบบเสียงลำโพงสำเร็จค่ะ", setTimeout(()=>{},1000));
+                }
+            });
+        };
 
-            isPlaying = true;
-            idleDisplay.style.display = 'none';
-            const data = queue.shift();
+        // เริ่มระบบจริง
+        document.getElementById('startBtn').onclick = () => {
+            document.getElementById('startOverlay').style.display = 'none';
+            if (typeof responsiveVoice !== 'undefined') { responsiveVoice.speak(" ", "Thai Female", {volume: 0}); }
+            const callsRef = query(ref(db, 'live/calls'), orderByChild('timestamp'), startAt(loadTime));
+            onChildAdded(callsRef, (snapshot) => {
+                callQueue.push(snapshot.val());
+                processQueue();
+            });
+        };
+
+        // 🟢 ฟังก์ชันอัปเดตประวัติการเรียก โดยดึงสี (color) ของช่องบริการมาใช้ด้วย
+        function updateRecentList(name, counterName, type, color) {
+            const shortCounter = counterName.replace('ช่องบริการที่', 'ช่อง').replace('ช่องที่', 'ช่อง');
+            const prefix = (type === 'recall') ? '🔄 ' : '';
+            
+            // นำค่าสีพื้นหลัง (color.bg) และสีเส้นขอบ (color.border) มาใช้ในแถบประวัติ
+            const itemHTML = `<div class="${color.bg} px-4 py-1 rounded-lg border ${color.border} shadow-sm whitespace-nowrap"><span class="text-white">${prefix}${name}</span> <span class="text-yellow-300 font-bold">(${shortCounter})</span></div>`;
+            
+            recentCalls.unshift(itemHTML);
+            if (recentCalls.length > 4) recentCalls.pop(); 
+            document.getElementById('recentList').innerHTML = recentCalls.join('');
+        }
+
+        function processQueue() {
+            if (isSpeaking || callQueue.length === 0) return;
+            isSpeaking = true;
+            
+            const data = callQueue.shift();
+            
             const color = getCounterColor(data.counterName);
+            document.getElementById('mainBox').className = `bg-white border-4 ${color.border} rounded-[3rem] p-16 shadow-2xl w-full max-w-5xl text-center relative transition-colors duration-500`;
+            document.getElementById('displayName').className = `text-7xl md:text-[6.5rem] font-bold ${color.text} mb-10 truncate blink leading-tight transition-colors duration-500`;
+            document.getElementById('counterBubble').className = `inline-block ${color.bg} px-16 py-6 rounded-full shadow-lg transition-colors duration-500`;
 
-            // 📺 อัปเดตหน้าจอหลัก (ตรงกลางจอ)
             document.getElementById('displayName').innerText = data.name;
-            // ใช้ class break-words และ name-text เพื่อแก้ปัญหาสระจม/ชื่อล้นจอ
-            document.getElementById('displayName').className = `text-7xl md:text-[6.5rem] font-bold ${color.mainText} mb-8 break-words blink name-text transition-colors duration-500`;
+            document.getElementById('displayCounter').innerText = "ที่ " + data.counterName;
             
-            document.getElementById('displayCounterBox').innerText = data.counterName;
-            document.getElementById('displayCounterBox').className = `${color.bg} text-white px-10 py-4 rounded-full text-5xl font-bold shadow-lg transition-colors duration-500`;
-            mainDisplay.classList.replace('scale-95', 'scale-100');
-            mainDisplay.classList.replace('opacity-0', 'opacity-100');
+            // 🟢 ส่ง color ไปให้ฟังก์ชันอัปเดตประวัติด้านล่างทำงาน
+            updateRecentList(data.name, data.counterName, data.type, color);
+            
+            if (data.type === 'recall') {
+                document.getElementById('recallBadge').classList.remove('hidden');
+            } else {
+                document.getElementById('recallBadge').classList.add('hidden');
+            }
+            
+            playSynthesizedChime().then(() => {
+                const textToSpeak = `ขอเชิญคุณ ${data.name} ที่ ${data.counterName} ค่ะ`;
+                const safetyTimer = setTimeout(() => { isSpeaking = false; processQueue(); }, 6000);
 
-            // 📋 อัปเดตแถบประวัติ "เรียกล่าสุด"
-            updateHistory(data, color);
-
-            // 🔊 สังเคราะห์เสียงพูด (TTS)
-            const textToSpeak = `ขอเชิญคุณ ${data.name} ที่ ${data.counterName} ค่ะ`;
-            const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            utterance.lang = 'th-TH';
-            utterance.rate = 0.85; // ปรับความเร็วเสียงให้ฟังสบาย
-            utterance.pitch = 1.1;
-            
-            // รอให้เสียงพูดจบ แล้วค้างจอไว้อีก 3 วินาทีเพื่อให้อ่านชื่อทัน
-            utterance.onend = () => {
-                setTimeout(processQueue, 3000); 
-            };
-            
-            // ป้องกันบั๊กเบราว์เซอร์เอ๋อ ไม่ยอมพูด
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
+                if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
+                    try {
+                        responsiveVoice.speak(textToSpeak, "Thai Female", {
+                            rate: 0.75, pitch: 1, volume: 1,
+                            onend: () => {
+                                clearTimeout(safetyTimer);
+                                setTimeout(() => { isSpeaking = false; processQueue(); }, 1500);
+                            }
+                        });
+                    } catch (e) { fallbackSpeak(textToSpeak, safetyTimer); }
+                } else {
+                    fallbackSpeak(textToSpeak, safetyTimer);
+                }
+            });
         }
 
-        // ฟังก์ชันสร้างประวัติคิว และใส่สีข้อความให้ตรงช่องบริการ
-        function updateHistory(data, color) {
-            // ลบข้อความ "ยังไม่มีข้อมูล..." ออกเมื่อมีคิวแรก
-            if (callHistory.length === 0) historyContainer.innerHTML = '';
-
-            // สร้างบล็อกข้อมูลการเรียกใหม่
-            const div = document.createElement('div');
-            // ใส่สีขอบเส้น (border) อ่อนๆ ให้ตรงกับสีช่องบริการ
-            div.className = `flex items-center gap-2 px-4 py-1.5 rounded-lg bg-slate-900 border ${color.border} shadow-sm animate-fade-in-right`;
-            
-            div.innerHTML = `
-                <span class="text-white font-semibold text-lg">${data.name}</span>
-                <span class="${color.text} font-bold text-lg">(${data.counterName})</span>
-            `;
-
-            // ดันรายชื่อใหม่ไปอยู่ซ้ายสุด
-            historyContainer.prepend(div);
-            callHistory.unshift(div);
-
-            // เก็บประวัติไว้โชว์แค่ 4 คิวล่าสุด เพื่อไม่ให้ข้อความล้นตกขอบจอ
-            if (callHistory.length > 4) {
-                const removedItem = callHistory.pop();
-                removedItem.remove();
-            }
+        function fallbackSpeak(text, safetyTimer) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'th-TH'; utterance.rate = 0.75;
+            utterance.onend = () => { clearTimeout(safetyTimer); setTimeout(() => { isSpeaking = false; processQueue(); }, 1500); };
+            utterance.onerror = () => { clearTimeout(safetyTimer); isSpeaking = false; processQueue(); };
+            window.speechSynthesis.speak(utterance);
         }
     </script>
 </body>
