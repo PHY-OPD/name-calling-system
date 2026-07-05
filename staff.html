@@ -149,8 +149,12 @@
                 }
                 const stats = {};
                 snapshot.forEach(child => {
-                    const cName = child.val().counterName;
-                    stats[cName] = (stats[cName] || 0) + 1;
+                    const data = child.val();
+                    // 🟢 [แก้ไขแล้ว] กรองเฉพาะการเรียกใหม่ (type: 'new') ไม่ให้นับการเรียกซ้ำ (type: 'recall')
+                    if (data.type === 'new' || !data.type) {
+                        const cName = data.counterName;
+                        stats[cName] = (stats[cName] || 0) + 1;
+                    }
                 });
                 const statsArray = Object.entries(stats).sort((a, b) => {
                     if (a[0] === myCounterName) return -1;
@@ -220,7 +224,6 @@
             }
         });
 
-        // 🟢 ฟังก์ชันให้กด Enter เพื่อ Log in ได้ทันทีในหน้า Staff
         const loginTrigger = function(e) {
             if (e.key === 'Enter') {
                 document.getElementById('loginBtn').click();
