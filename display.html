@@ -14,6 +14,8 @@
         .blink { animation: blinker 2s linear infinite; }
         @keyframes blinker { 50% { opacity: 0.3; } }
         .bg-medical { background: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 100%); }
+        /* เพิ่ม CSS พิเศษป้องกันสระบน/ล่างโดนตัด และจัดบรรทัดให้สวยงาม */
+        .name-text { line-height: 1.4 !important; padding-top: 1rem; padding-bottom: 1.5rem; }
     </style>
 </head>
 <body class="bg-medical text-gray-800 h-screen flex flex-col relative">
@@ -49,19 +51,20 @@
         </div>
     </header>
 
-    <main class="flex-1 flex flex-col justify-center items-center px-4 relative">
+    <main class="flex-1 flex flex-col justify-center items-center px-4 relative py-4">
         <p class="text-4xl text-slate-500 mb-6 font-bold tracking-widest">ขอเชิญผู้รับบริการ</p>
         
-        <div id="mainBox" class="bg-white border-4 border-blue-200 rounded-[3rem] p-16 shadow-2xl w-full max-w-5xl text-center relative transition-colors duration-500">
+        <div id="mainBox" class="bg-white border-4 border-blue-200 rounded-[3rem] p-12 md:p-16 shadow-2xl w-full max-w-5xl text-center relative transition-colors duration-500">
             
             <div id="recallBadge" class="hidden absolute -top-8 -right-8 bg-orange-500 text-white px-8 py-3 rounded-full text-3xl font-bold shadow-xl animate-bounce border-4 border-white z-10">
                 🔄 เรียกซ้ำ
             </div>
 
-            <h1 id="displayName" class="text-7xl md:text-[6.5rem] font-bold text-blue-900 mb-10 truncate blink leading-tight transition-colors duration-500">
+            <h1 id="displayName" class="text-6xl md:text-[5.5rem] font-bold text-blue-900 mb-8 break-words whitespace-normal blink name-text transition-colors duration-500">
                 -- ว่าง --
             </h1>
-            <div id="counterBubble" class="inline-block bg-blue-700 px-16 py-6 rounded-full shadow-lg transition-colors duration-500">
+            
+            <div id="counterBubble" class="inline-block bg-blue-700 px-16 py-6 rounded-full shadow-lg transition-colors duration-500 mt-4">
                 <h2 id="displayCounter" class="text-5xl md:text-6xl font-bold text-yellow-300">กรุณารอเรียกชื่อ</h2>
             </div>
         </div>
@@ -100,7 +103,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // 📶 ตรวจสอบสถานะการเชื่อมต่ออินเทอร์เน็ต (Firebase Connection State)
         const connectedRef = ref(db, ".info/connected");
         onValue(connectedRef, (snap) => {
             const statusDiv = document.getElementById('networkStatus');
@@ -113,10 +115,8 @@
             }
         });
 
-        // นาฬิกา
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH'); }, 1000);
 
-        // ดึงข้อความวิ่ง
         onValue(ref(db, 'live/marquee'), (snapshot) => {
             const text = snapshot.val();
             const container = document.getElementById('marqueeContainer');
@@ -151,7 +151,6 @@
         let recentCalls = []; 
         const loadTime = Date.now(); 
 
-        // ระบบเสียงติ๊งต่อง
         function playSynthesizedChime() {
             return new Promise((resolve) => {
                 try {
@@ -173,7 +172,6 @@
             });
         }
 
-        // 🔊 สคริปต์ปุ่มทดสอบเสียงลำโพง
         document.getElementById('testSoundBtn').onclick = () => {
             playSynthesizedChime().then(() => {
                 if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
@@ -184,7 +182,6 @@
             });
         };
 
-        // เริ่มระบบจริง
         document.getElementById('startBtn').onclick = () => {
             document.getElementById('startOverlay').style.display = 'none';
             if (typeof responsiveVoice !== 'undefined') { responsiveVoice.speak(" ", "Thai Female", {volume: 0}); }
@@ -195,12 +192,10 @@
             });
         };
 
-        // 🟢 ฟังก์ชันอัปเดตประวัติการเรียก โดยดึงสี (color) ของช่องบริการมาใช้ด้วย
         function updateRecentList(name, counterName, type, color) {
             const shortCounter = counterName.replace('ช่องบริการที่', 'ช่อง').replace('ช่องที่', 'ช่อง');
             const prefix = (type === 'recall') ? '🔄 ' : '';
             
-            // นำค่าสีพื้นหลัง (color.bg) และสีเส้นขอบ (color.border) มาใช้ในแถบประวัติ
             const itemHTML = `<div class="${color.bg} px-4 py-1 rounded-lg border ${color.border} shadow-sm whitespace-nowrap"><span class="text-white">${prefix}${name}</span> <span class="text-yellow-300 font-bold">(${shortCounter})</span></div>`;
             
             recentCalls.unshift(itemHTML);
@@ -213,16 +208,18 @@
             isSpeaking = true;
             
             const data = callQueue.shift();
-            
             const color = getCounterColor(data.counterName);
-            document.getElementById('mainBox').className = `bg-white border-4 ${color.border} rounded-[3rem] p-16 shadow-2xl w-full max-w-5xl text-center relative transition-colors duration-500`;
-            document.getElementById('displayName').className = `text-7xl md:text-[6.5rem] font-bold ${color.text} mb-10 truncate blink leading-tight transition-colors duration-500`;
-            document.getElementById('counterBubble').className = `inline-block ${color.bg} px-16 py-6 rounded-full shadow-lg transition-colors duration-500`;
+            
+            document.getElementById('mainBox').className = `bg-white border-4 ${color.border} rounded-[3rem] p-12 md:p-16 shadow-2xl w-full max-w-5xl text-center relative transition-colors duration-500`;
+            
+            // 🟢 แก้ไขตรงนี้ด้วย: อัปเดตคลาสใน JavaScript ให้ตรงกับด้านบน
+            document.getElementById('displayName').className = `text-6xl md:text-[5.5rem] font-bold ${color.text} mb-8 break-words whitespace-normal blink name-text transition-colors duration-500`;
+            
+            document.getElementById('counterBubble').className = `inline-block ${color.bg} px-16 py-6 rounded-full shadow-lg transition-colors duration-500 mt-4`;
 
             document.getElementById('displayName').innerText = data.name;
             document.getElementById('displayCounter').innerText = "ที่ " + data.counterName;
             
-            // 🟢 ส่ง color ไปให้ฟังก์ชันอัปเดตประวัติด้านล่างทำงาน
             updateRecentList(data.name, data.counterName, data.type, color);
             
             if (data.type === 'recall') {
