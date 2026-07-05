@@ -61,7 +61,7 @@
                 <label class="block text-blue-900 text-lg font-bold mb-3">พิมพ์ชื่อ - นามสกุล ผู้รับบริการ (ภาษาไทย/อังกฤษ)</label>
                 <input type="text" id="patientName" placeholder="เช่น สมชาย ใจดี หรือ John Smith" class="border-2 border-blue-200 p-4 rounded-xl w-full text-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition" autocomplete="off">
                 <div class="mt-5">
-                    <button id="callBtn" class="w-full bg-green-600 text-white p-4 rounded-xl font-bold text-2xl hover:bg-green-500 shadow-md active:scale-95 shadow transition">
+                    <button id="callBtn" class="w-full bg-green-600 text-white p-4 rounded-xl font-bold text-2xl hover:bg-green-500 shadow-md active:scale-95 transition">
                         เรียกชื่อ
                     </button>
                 </div>
@@ -99,19 +99,19 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
+        // 📶 ระบบเช็คสถานะอินเทอร์เน็ต
         const connectedRef = ref(db, ".info/connected");
         onValue(connectedRef, (snap) => {
             const statusDiv = document.getElementById('networkStatus');
+            const callBtn = document.getElementById('callBtn');
             if (snap.val() === true) {
                 statusDiv.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> ออนไลน์';
                 statusDiv.className = 'flex items-center gap-2 text-xs font-bold text-green-700 bg-green-100 px-3 py-1 rounded-full border border-green-300 transition-colors duration-300';
-                document.getElementById('callBtn').disabled = false;
-                document.getElementById('callBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+                if(callBtn) { callBtn.disabled = false; callBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
             } else {
                 statusDiv.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span> ออฟไลน์ (เน็ตหลุด)';
                 statusDiv.className = 'flex items-center gap-2 text-xs font-bold text-red-700 bg-red-100 px-3 py-1 rounded-full border border-red-400 transition-colors duration-300';
-                document.getElementById('callBtn').disabled = true;
-                document.getElementById('callBtn').classList.add('opacity-50', 'cursor-not-allowed');
+                if(callBtn) { callBtn.disabled = true; callBtn.classList.add('opacity-50', 'cursor-not-allowed'); }
             }
         });
 
@@ -125,8 +125,9 @@
         const skippedList = document.getElementById('skippedList');
         const skipCountDisplay = document.getElementById('skipCount');
 
+        // 🟢 [อัปเดต] ใช้รหัส Unicode ป้องกันเซิร์ฟเวอร์ GitHub Deploy พังจากปัญหาตัวอักษรภาษาไทย
         patientNameInput.addEventListener('input', function() {
-            this.value = this.value.replace(/[^ก-๙a-zA-Z\s]/g, '');
+            this.value = this.value.replace(/[^\u0E00-\u0E7Fa-zA-Z\s]/g, '');
         });
 
         async function checkAndAutoClearData() {
@@ -150,10 +151,8 @@
                 const stats = {};
                 snapshot.forEach(child => {
                     const data = child.val();
-                    // 🟢 [แก้ไขแล้ว] กรองเฉพาะการเรียกใหม่ (type: 'new') ไม่ให้นับการเรียกซ้ำ (type: 'recall')
                     if (data.type === 'new' || !data.type) {
-                        const cName = data.counterName;
-                        stats[cName] = (stats[cName] || 0) + 1;
+                        stats[data.counterName] = (stats[data.counterName] || 0) + 1;
                     }
                 });
                 const statsArray = Object.entries(stats).sort((a, b) => {
@@ -224,6 +223,7 @@
             }
         });
 
+        // 🟢 ระบบเคาะ Enter เพื่อเข้าสู่ระบบ
         const loginTrigger = function(e) {
             if (e.key === 'Enter') {
                 document.getElementById('loginBtn').click();
@@ -263,4 +263,3 @@
     </script>
 </body>
 </html>
-
