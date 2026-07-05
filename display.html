@@ -19,9 +19,12 @@
 <body class="bg-medical text-gray-800 h-screen flex flex-col relative">
     
     <div id="startOverlay" class="absolute inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center">
-        <h2 class="text-white text-2xl mb-8">ระบบเรียกชื่อผู้รับบริการ</h2>
-        <button id="startBtn" class="bg-blue-600 text-white text-4xl px-12 py-6 rounded-2xl shadow-lg hover:bg-blue-500 hover:scale-105 transition">
+        <h2 class="text-white text-3xl mb-10 font-bold tracking-wide">ระบบเรียกชื่อผู้รับบริการ</h2>
+        <button id="startBtn" class="bg-blue-600 text-white text-4xl px-12 py-6 rounded-2xl shadow-[0_0_30px_rgba(37,99,235,0.5)] hover:bg-blue-500 hover:scale-105 transition">
             ▶ เริ่มระบบประกาศเสียง
+        </button>
+        <button id="testSoundBtn" class="mt-8 text-slate-400 hover:text-white border-2 border-slate-600 hover:border-slate-400 px-6 py-3 rounded-full text-xl transition flex items-center gap-2">
+            🔊 ทดสอบเสียงลำโพง
         </button>
     </div>
 
@@ -35,8 +38,14 @@
                 <p class="text-blue-600 font-semibold">ระบบเรียกชื่อผู้รับบริการ</p>
             </div>
         </div>
-        <div class="text-3xl font-bold text-slate-700 bg-slate-100 px-6 py-2 rounded-xl border" id="clock">
-            00:00:00
+        
+        <div class="flex items-center gap-6">
+            <div id="networkStatus" class="flex items-center gap-2 text-sm font-bold text-slate-500 bg-slate-100 px-4 py-2 rounded-full border border-slate-200 shadow-sm transition-colors duration-300">
+                <span class="w-3 h-3 rounded-full bg-slate-400"></span> กำลังเชื่อมต่อ...
+            </div>
+            <div class="text-3xl font-bold text-slate-700 bg-slate-100 px-6 py-2 rounded-xl border shadow-inner" id="clock">
+                00:00:00
+            </div>
         </div>
     </header>
 
@@ -58,7 +67,7 @@
         </div>
     </main>
 
-    <footer class="bg-slate-800 text-white p-4 shadow-inner mt-auto flex flex-col justify-center">
+    <footer class="bg-slate-800 text-white p-4 shadow-inner mt-auto flex flex-col justify-center z-30">
         <div class="flex items-center gap-4 max-w-7xl mx-auto w-full mb-2">
             <div class="bg-slate-700 px-4 py-2 rounded-lg font-bold whitespace-nowrap text-lg">📋 เรียกล่าสุด:</div>
             <div id="recentList" class="flex gap-4 overflow-hidden text-xl font-semibold text-slate-300 w-full">
@@ -91,10 +100,23 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // 📶 ตรวจสอบสถานะการเชื่อมต่ออินเทอร์เน็ต (Firebase Connection State)
+        const connectedRef = ref(db, ".info/connected");
+        onValue(connectedRef, (snap) => {
+            const statusDiv = document.getElementById('networkStatus');
+            if (snap.val() === true) {
+                statusDiv.innerHTML = '<span class="w-3 h-3 rounded-full bg-green-500 animate-[pulse_2s_ease-in-out_infinite]"></span> ออนไลน์ (เชื่อมต่อแล้ว)';
+                statusDiv.className = 'flex items-center gap-2 text-sm font-bold text-green-700 bg-green-100 px-4 py-2 rounded-full border border-green-300 shadow-sm transition-colors duration-300';
+            } else {
+                statusDiv.innerHTML = '<span class="w-3 h-3 rounded-full bg-red-600 animate-[pulse_1s_ease-in-out_infinite]"></span> ออฟไลน์ (เน็ตหลุด)';
+                statusDiv.className = 'flex items-center gap-2 text-sm font-bold text-red-700 bg-red-100 px-4 py-2 rounded-full border border-red-400 shadow-md transition-colors duration-300';
+            }
+        });
+
         // นาฬิกา
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH'); }, 1000);
 
-        // 📢 ดึงข้อความวิ่งประชาสัมพันธ์แบบ Real-time พร้อมแก้บั๊กเบราว์เซอร์ค้าง
+        // ดึงข้อความวิ่ง
         onValue(ref(db, 'live/marquee'), (snapshot) => {
             const text = snapshot.val();
             const container = document.getElementById('marqueeContainer');
@@ -103,22 +125,13 @@
             if (text && text.trim() !== "") {
                 marquee.innerText = text;
                 container.classList.remove('hidden');
-                
-                // 🔥 ทริคแก้บั๊กค้าง: สั่งให้หยุดวิ่งก่อน แล้วสั่งเริ่มวิ่งใหม่ทันที 
-                // วิธีนี้จะบังคับให้ Chrome/Edge รีเซ็ตระบบแอนิเมชันตัววิ่งใหม่ทุกครั้งที่มีข้อความอัปเดต
-                if (typeof marquee.start === 'function') {
-                    marquee.stop();
-                    marquee.start();
-                }
+                if (typeof marquee.start === 'function') { marquee.stop(); marquee.start(); }
             } else {
                 container.classList.add('hidden');
-                if (typeof marquee.stop === 'function') {
-                    marquee.stop();
-                }
+                if (typeof marquee.stop === 'function') { marquee.stop(); }
             }
         });
 
-        // 🎨 ระบบสีประจำช่องบริการ
         const colorPalette = [
             { bg: 'bg-blue-700', border: 'border-blue-300', text: 'text-blue-900' },
             { bg: 'bg-green-700', border: 'border-green-300', text: 'text-green-900' },
@@ -138,6 +151,7 @@
         let recentCalls = []; 
         const loadTime = Date.now(); 
 
+        // ระบบเสียงติ๊งต่อง
         function playSynthesizedChime() {
             return new Promise((resolve) => {
                 try {
@@ -159,6 +173,18 @@
             });
         }
 
+        // 🔊 สคริปต์ปุ่มทดสอบเสียงลำโพง
+        document.getElementById('testSoundBtn').onclick = () => {
+            playSynthesizedChime().then(() => {
+                if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
+                    responsiveVoice.speak("ทดสอบระบบเสียงลำโพงสำเร็จค่ะ", "Thai Female", {rate: 0.75, pitch: 1, volume: 1});
+                } else {
+                    fallbackSpeak("ทดสอบระบบเสียงลำโพงสำเร็จค่ะ", setTimeout(()=>{},1000));
+                }
+            });
+        };
+
+        // เริ่มระบบจริง
         document.getElementById('startBtn').onclick = () => {
             document.getElementById('startOverlay').style.display = 'none';
             if (typeof responsiveVoice !== 'undefined') { responsiveVoice.speak(" ", "Thai Female", {volume: 0}); }
