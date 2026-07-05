@@ -45,20 +45,17 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
             <div class="border p-6 rounded-xl bg-white shadow-sm flex flex-col">
                 <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2">🏥 2. การจัดการช่องบริการ (Counters)</h2>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="counterName" placeholder="เช่น ช่องบริการที่ 6" class="border-2 p-2 rounded-lg w-full focus:border-blue-500 outline-none">
                     <button id="addCounterBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">เพิ่ม</button>
                 </div>
-                <ul id="counterList" class="space-y-2 max-h-64 overflow-y-auto pr-1">
-                    </ul>
+                <ul id="counterList" class="space-y-2 max-h-64 overflow-y-auto pr-1"></ul>
             </div>
 
             <div class="border p-6 rounded-xl bg-white shadow-sm flex flex-col">
                 <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2">👥 3. การจัดการบัญชีพนักงาน (Staff)</h2>
-                
                 <div class="bg-slate-50 p-4 rounded-xl mb-4 border border-slate-200">
                     <p class="text-sm font-bold text-slate-600 mb-2">➕ สร้างบัญชีพนักงานใหม่</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
@@ -75,10 +72,8 @@
                 </div>
 
                 <p class="text-sm font-bold text-slate-600 mb-2">📋 รายชื่อพนักงานในระบบปัจจุบัน</p>
-                <ul id="staffList" class="space-y-2 max-h-64 overflow-y-auto pr-1">
-                    </ul>
+                <ul id="staffList" class="space-y-2 max-h-64 overflow-y-auto pr-1"></ul>
             </div>
-
         </div>
 
         <footer class="text-center text-sm font-semibold text-slate-500 mt-8 border-t pt-4">
@@ -118,9 +113,8 @@
         const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
         const secondaryAuth = getAuth(secondaryApp);
 
-        let globalCounters = {}; // เก็บข้อมูลช่องบริการชั่วคราวเพื่อใช้อ้างอิงในตารางพนักงาน
+        let globalCounters = {}; 
 
-        // 📶 ไฟสถานะเน็ตแอดมิน
         onValue(ref(db, ".info/connected"), (snap) => {
             const statusDiv = document.getElementById('networkStatus');
             if (snap.val() === true) {
@@ -146,7 +140,6 @@
             }
         });
 
-        // 📊 โหลดสถิติเรียลไทม์
         function loadStats() {
             onValue(ref(db, 'live/calls'), (snapshot) => {
                 const container = document.getElementById('statsContainer');
@@ -186,7 +179,6 @@
             }
         };
 
-        // 🏥 CRUD: โหลดและจัดการช่องบริการ
         function loadCounters() {
             onValue(ref(db, 'counters'), (snapshot) => {
                 const list = document.getElementById('counterList');
@@ -203,13 +195,10 @@
                 snapshot.forEach((child) => {
                     const data = child.val();
                     globalCounters[child.key] = data.name;
-
-                    // เติมลง Dropdown ฟอร์มพนักงาน
                     const opt = document.createElement('option');
                     opt.value = child.key; opt.innerText = data.name;
                     select.appendChild(opt);
 
-                    // สร้าง UI List พร้อมปุ่ม แก้ไข / ลบ
                     const li = document.createElement('li');
                     li.className = "bg-slate-50 p-3 border rounded-lg flex justify-between items-center text-sm font-semibold text-slate-700 shadow-sm";
                     li.innerHTML = `
@@ -219,22 +208,17 @@
                             <button class="del-btn text-red-600 hover:text-red-800 bg-red-50 px-3 py-1 rounded transition">ลบ</button>
                         </div>
                     `;
-
-                    // ปุ่มแก้ไขชื่อช่องบริการ (Inline Edit)
                     li.querySelector('.edit-btn').onclick = async () => {
                         const newName = prompt(`แก้ไขชื่อช่องบริการ "${data.name}" เป็น:`, data.name);
                         if (newName && newName.trim() !== "" && newName.trim() !== data.name) {
                             try { await update(ref(db, `counters/${child.key}`), { name: newName.trim() }); } catch (e) { alert(e.message); }
                         }
                     };
-
-                    // ปุ่มลบช่องบริการ
                     li.querySelector('.del-btn').onclick = async () => {
-                        if (confirm(`⚠️ ยืนยันการลบ "${data.name}"?\n\nพนักงานที่ผูกกับช่องนี้จะต้องเลือกช่องประจำใหม่`)) {
+                        if (confirm(`⚠️ ยืนยันการลบ "${data.name}"?`)) {
                             try { await remove(ref(db, `counters/${child.key}`)); } catch (e) { alert(e.message); }
                         }
                     };
-
                     list.appendChild(li);
                 });
             });
@@ -246,7 +230,6 @@
             try { const newRef = push(ref(db, 'counters')); await set(newRef, { id: newRef.key, name: name }); document.getElementById('counterName').value = ''; } catch (e) { alert(e.message); }
         };
 
-        // 👥 CRUD: โหลดและจัดการพนักงาน
         function loadStaffList() {
             onValue(ref(db, 'users'), (snapshot) => {
                 const list = document.getElementById('staffList');
@@ -255,13 +238,12 @@
                 let hasStaff = false;
                 snapshot.forEach((child) => {
                     const data = child.val();
-                    if (data.role !== 'staff') return; // ดึงเฉพาะพนักงาน ไม่ดึง admin
+                    if (data.role !== 'staff') return; 
                     hasStaff = true;
 
                     const li = document.createElement('li');
                     li.className = "bg-slate-50 p-3 border rounded-lg flex flex-col gap-2 text-sm shadow-sm";
                     
-                    // สร้าง Dropdown สลับช่องบริการประจำให้พนักงานในตารางแบบเรียลไทม์
                     let optionsHtml = `<option value="">-- ไม่ระบุช่อง --</option>`;
                     for (const [id, cName] of Object.entries(globalCounters)) {
                         const selected = (id === data.counterId) ? 'selected' : '';
@@ -281,7 +263,6 @@
                         </div>
                     `;
 
-                    // ฟังก์ชันเปลี่ยนช่องบริการประจำของพนักงานทันทีเมื่อกดเลือกย้ายช่อง
                     li.querySelector('.change-counter-select').onchange = async (e) => {
                         try {
                             await update(ref(db, `users/${child.key}`), { counterId: e.target.value });
@@ -289,13 +270,11 @@
                         } catch (e) { alert("เกิดข้อผิดพลาด: " + e.message); }
                     };
 
-                    // ฟังก์ชันลบพนักงานออกจากฐานข้อมูล
                     li.querySelector('.del-staff-btn').onclick = async () => {
-                        if (confirm(`⚠️ ยืนยันลบพนักงาน "${data.email}" ออกจากระบบ?\n\nพนักงานคนนี้จะไม่สามารถล็อกอินทำงานคิวได้อีกต่อไป`)) {
+                        if (confirm(`⚠️ ยืนยันลบพนักงาน "${data.email}" ออกจากระบบ?`)) {
                             try { await remove(ref(db, `users/${child.key}`)); } catch (e) { alert(e.message); }
                         }
                     };
-
                     list.appendChild(li);
                 });
 
@@ -305,7 +284,6 @@
             });
         }
 
-        // ลงทะเบียนสร้างบัญชีพนักงานใหม่
         document.getElementById('addStaffBtn').onclick = async () => {
             const email = document.getElementById('staffEmail').value.trim();
             const pass = document.getElementById('staffPass').value;
@@ -316,20 +294,22 @@
             try {
                 status.innerText = "กำลังสร้าง..."; status.className="text-blue-500 text-xs mt-2";
                 const cred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
-                
-                // บันทึก email ลงฐานข้อมูลด้วย เพื่อดึงรายชื่อมาแสดงผลการจัดการหลังบ้านได้
-                await set(ref(db, 'users/' + cred.user.uid), { 
-                    role: 'staff', 
-                    counterId: counterId,
-                    email: email 
-                });
+                await set(ref(db, 'users/' + cred.user.uid), { role: 'staff', counterId: counterId, email: email });
                 await signOut(secondaryAuth);
                 status.innerText = "✅ สร้างพนักงานและผูกช่องสำเร็จ!"; status.className="text-green-600 text-xs font-bold mt-2";
                 document.getElementById('staffEmail').value = ''; document.getElementById('staffPass').value = '';
             } catch (e) { status.innerText = "Error: " + e.message; status.className="text-red-500 text-xs mt-2"; }
         };
 
-        // แอดมินล็อกอิน / ล็อกเอาต์
+        // 🟢 ฟังก์ชันให้กด Enter เพื่อ Log in ได้ทันทีในหน้า Admin
+        const adminLoginTrigger = function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginBtn').click();
+            }
+        };
+        document.getElementById('authEmail').addEventListener('keypress', adminLoginTrigger);
+        document.getElementById('authPass').addEventListener('keypress', adminLoginTrigger);
+
         document.getElementById('registerBtn').onclick = async () => {
             try {
                 const cred = await createUserWithEmailAndPassword(auth, document.getElementById('authEmail').value, document.getElementById('authPass').value);
@@ -337,10 +317,20 @@
                 alert("ลงทะเบียนแอดมินคนแรกสำเร็จ!");
             } catch (e) { alert(e.message); }
         };
+        
         document.getElementById('loginBtn').onclick = async () => {
-            try { await signInWithEmailAndPassword(auth, document.getElementById('authEmail').value, document.getElementById('authPass').value); } catch (e) { alert("เข้าสู่ระบบล้มเหลว"); }
+            const emailVal = document.getElementById('authEmail').value.trim();
+            const passVal = document.getElementById('authPass').value;
+            if(!emailVal || !passVal) { alert("กรุณากรอกข้อมูลให้ครบถ้วน"); return; }
+            try { await signInWithEmailAndPassword(auth, emailVal, passVal); } catch (e) { alert("อีเมลหรือรหัสผ่านไม่ถูกต้อง"); }
         };
-        document.getElementById('logoutBtn').onclick = () => signOut(auth);
+        
+        document.getElementById('logoutBtn').onclick = () => {
+            signOut(auth).then(() => {
+                document.getElementById('authEmail').value = '';
+                document.getElementById('authPass').value = '';
+            });
+        };
     </script>
 </body>
 </html>
