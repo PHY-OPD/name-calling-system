@@ -5,57 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - ระบบเรียกชื่อ</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Sarabun', sans-serif; }</style>
 </head>
 <body class="bg-gray-100 min-h-screen p-6">
-    <div id="app" class="max-w-5xl mx-auto bg-white p-8 rounded-xl shadow-md hidden flex-col">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-blue-700">⚙️ Admin Panel</h1>
-            <button id="logoutBtn" class="bg-red-50 text-red-500 px-4 py-2 rounded-lg font-bold hover:bg-red-100 transition">ออกจากระบบ</button>
+    <div id="app" class="max-w-6xl mx-auto bg-white p-8 rounded-xl shadow-md hidden flex-col gap-6">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-blue-700">⚙️ Grand Admin Panel</h1>
+                <p class="text-slate-500 font-medium">ระบบจัดการห้องเวชระเบียนผู้ป่วยนอก โรงพยาบาลพะเยา</p>
+            </div>
+            <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                <div id="networkStatus" class="flex items-center gap-2 text-xs font-bold text-slate-500 px-3 py-1 rounded-full border transition-colors duration-300">
+                    <span class="w-2 h-2 rounded-full bg-slate-400"></span> รอการเชื่อมต่อ...
+                </div>
+                <button id="logoutBtn" class="bg-red-50 text-red-500 px-4 py-2 rounded-lg font-bold hover:bg-red-100 transition">ออกจากระบบ</button>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            <div class="border p-6 rounded-xl bg-slate-50 md:col-span-2 shadow-sm">
-                <div class="flex justify-between items-center mb-4 border-b pb-3">
-                    <h2 class="text-xl font-bold text-slate-700">📊 สถิติการเรียกคิวประจำวัน</h2>
-                    <button id="clearDataBtn" class="bg-red-600 text-white px-5 py-2 rounded-lg font-bold shadow hover:bg-red-700 active:scale-95 transition flex items-center gap-2">
-                        ล้างข้อมูลจบวัน
-                    </button>
-                </div>
-                <div id="statsContainer" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <p class="text-slate-500 italic col-span-4 text-center py-4">กำลังโหลดสถิติ...</p>
-                </div>
+        <div class="border p-6 rounded-xl bg-slate-50 shadow-sm">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h2 class="text-xl font-bold text-slate-700">📊 สถิติการเรียกคิวประจำวัน</h2>
+                <button id="clearDataBtn" class="bg-red-600 text-white px-5 py-2 rounded-lg font-bold shadow hover:bg-red-700 active:scale-95 transition flex items-center gap-2">
+                    ล้างข้อมูลจบวัน
+                </button>
             </div>
+            <div id="statsContainer" class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <p class="text-slate-500 italic col-span-5 text-center py-4">กำลังโหลดสถิติ...</p>
+            </div>
+        </div>
 
-            <div class="border p-6 rounded-xl bg-white shadow-sm">
-                <h2 class="text-xl font-bold text-slate-700 mb-4">1. เพิ่มช่องบริการ</h2>
+        <div class="border p-6 rounded-xl bg-blue-50 shadow-sm border-blue-200">
+            <h2 class="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">📢 1. ข้อความตัววิ่งประชาสัมพันธ์บนจอทีวี</h2>
+            <div class="flex flex-col md:flex-row gap-3">
+                <input type="text" id="marqueeInput" placeholder="พิมพ์ข้อความที่ต้องการให้วิ่งบนจอทีวี (เว้นว่างไว้หากต้องการปิด)" class="border-2 border-blue-300 p-3 rounded-lg w-full focus:border-blue-500 outline-none">
+                <button id="updateMarqueeBtn" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition whitespace-nowrap shadow-md">ส่งขึ้นจอทีวี</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <div class="border p-6 rounded-xl bg-white shadow-sm flex flex-col">
+                <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2">🏥 2. การจัดการช่องบริการ (Counters)</h2>
                 <div class="flex gap-2 mb-4">
-                    <input type="text" id="counterName" placeholder="เช่น ช่องที่ 1, เภสัชกรรม" class="border-2 p-2 rounded-lg w-full focus:border-blue-500 outline-none">
+                    <input type="text" id="counterName" placeholder="เช่น ช่องบริการที่ 6" class="border-2 p-2 rounded-lg w-full focus:border-blue-500 outline-none">
                     <button id="addCounterBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">เพิ่ม</button>
                 </div>
-                <ul id="counterList" class="space-y-2 max-h-48 overflow-y-auto"></ul>
+                <ul id="counterList" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    </ul>
             </div>
 
-            <div class="border p-6 rounded-xl bg-white shadow-sm">
-                <h2 class="text-xl font-bold text-slate-700 mb-4">2. สร้างบัญชีพนักงาน</h2>
-                <input type="email" id="staffEmail" placeholder="อีเมลพนักงาน" class="border-2 p-2 rounded-lg w-full mb-3 focus:border-blue-500 outline-none">
-                <input type="password" id="staffPass" placeholder="รหัสผ่าน (6 ตัวขึ้น)" class="border-2 p-2 rounded-lg w-full mb-3 focus:border-blue-500 outline-none">
-                <select id="staffCounter" class="border-2 p-2 rounded-lg w-full mb-4 focus:border-blue-500 outline-none bg-white">
-                    <option value="">-- เลือกช่องบริการประจำ --</option>
-                </select>
-                <button id="addStaffBtn" class="bg-green-600 text-white px-4 py-3 rounded-lg w-full font-bold hover:bg-green-700 transition shadow">เพิ่มบัญชีพนักงาน</button>
-                <div id="staffStatus" class="mt-3 text-sm text-center font-semibold"></div>
-            </div>
-
-            <div class="border p-6 rounded-xl bg-blue-50 md:col-span-2 shadow-sm border-blue-200">
-                <h2 class="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">📢 3. ข้อความตัววิ่งประชาสัมพันธ์บนจอทีวี</h2>
-                <div class="flex flex-col md:flex-row gap-3">
-                    <input type="text" id="marqueeInput" placeholder="พิมพ์ข้อความที่ต้องการให้วิ่งบนจอทีวี (เว้นว่างไว้หากต้องการปิด)" class="border-2 border-blue-300 p-3 rounded-lg w-full focus:border-blue-500 outline-none">
-                    <button id="updateMarqueeBtn" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition whitespace-nowrap shadow-md">ส่งขึ้นจอทีวี</button>
+            <div class="border p-6 rounded-xl bg-white shadow-sm flex flex-col">
+                <h2 class="text-xl font-bold text-slate-700 mb-4 border-b pb-2">👥 3. การจัดการบัญชีพนักงาน (Staff)</h2>
+                
+                <div class="bg-slate-50 p-4 rounded-xl mb-4 border border-slate-200">
+                    <p class="text-sm font-bold text-slate-600 mb-2">➕ สร้างบัญชีพนักงานใหม่</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                        <input type="email" id="staffEmail" placeholder="อีเมล (เช่น opd1@mail.com)" class="border-2 p-2 rounded-lg text-sm focus:border-blue-500 outline-none bg-white">
+                        <input type="password" id="staffPass" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" class="border-2 p-2 rounded-lg text-sm focus:border-blue-500 outline-none bg-white">
+                    </div>
+                    <div class="flex gap-2">
+                        <select id="staffCounter" class="border-2 p-2 rounded-lg text-sm w-full focus:border-blue-500 outline-none bg-white">
+                            <option value="">-- เลือกช่องบริการประจำ --</option>
+                        </select>
+                        <button id="addStaffBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-green-700 transition shadow whitespace-nowrap">เพิ่มพนักงาน</button>
+                    </div>
+                    <div id="staffStatus" class="mt-2 text-xs text-center font-semibold"></div>
                 </div>
-                <p class="text-sm text-blue-600 mt-2">* หากไม่ต้องการให้มีตัววิ่ง ให้ลบข้อความออกให้หมดแล้วกด "ส่งขึ้นจอทีวี"</p>
+
+                <p class="text-sm font-bold text-slate-600 mb-2">📋 รายชื่อพนักงานในระบบปัจจุบัน</p>
+                <ul id="staffList" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    </ul>
             </div>
 
         </div>
@@ -66,8 +87,8 @@
     </div>
 
     <div id="authSection" class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl mt-20 border-t-4 border-blue-600">
-        <h1 class="text-2xl font-bold text-center mb-6 text-blue-900">ผู้ดูแลระบบ</h1>
-        <input type="email" id="authEmail" placeholder="อีเมล" class="border-2 p-3 rounded-lg w-full mb-4 outline-none focus:border-blue-500">
+        <h1 class="text-2xl font-bold text-center mb-6 text-blue-900">ผู้ดูแลระบบ (Admin)</h1>
+        <input type="email" id="authEmail" placeholder="อีเมลแอดมิน" class="border-2 p-3 rounded-lg w-full mb-4 outline-none focus:border-blue-500">
         <input type="password" id="authPass" placeholder="รหัสผ่าน" class="border-2 p-3 rounded-lg w-full mb-6 outline-none focus:border-blue-500">
         <div class="flex gap-4">
             <button id="loginBtn" class="bg-blue-600 text-white px-4 py-3 rounded-lg w-full font-bold hover:bg-blue-700 transition">เข้าสู่ระบบ</button>
@@ -78,7 +99,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAUg9GVdMIYVX4M6w2K4gMVdYy3YlbowxU",
@@ -93,144 +114,233 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        
         const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
         const secondaryAuth = getAuth(secondaryApp);
 
-        const appDiv = document.getElementById('app');
-        const authSection = document.getElementById('authSection');
-        const counterList = document.getElementById('counterList');
-        const staffCounterSelect = document.getElementById('staffCounter');
-        const statsContainer = document.getElementById('statsContainer');
-        const marqueeInput = document.getElementById('marqueeInput');
+        let globalCounters = {}; // เก็บข้อมูลช่องบริการชั่วคราวเพื่อใช้อ้างอิงในตารางพนักงาน
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                authSection.classList.add('hidden');
-                appDiv.classList.remove('hidden');
-                appDiv.classList.add('flex');
-                loadCounters();
-                loadStats();
-                loadMarquee();
+        // 📶 ไฟสถานะเน็ตแอดมิน
+        onValue(ref(db, ".info/connected"), (snap) => {
+            const statusDiv = document.getElementById('networkStatus');
+            if (snap.val() === true) {
+                statusDiv.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> ออนไลน์';
+                statusDiv.className = 'flex items-center gap-2 text-xs font-bold text-green-700 bg-green-100 px-3 py-1 rounded-full border border-green-300';
             } else {
-                authSection.classList.remove('hidden');
-                appDiv.classList.add('hidden');
-                appDiv.classList.remove('flex');
+                statusDiv.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span> เน็ตหลุด';
+                statusDiv.className = 'flex items-center gap-2 text-xs font-bold text-red-700 bg-red-100 px-3 py-1 rounded-full border border-red-400';
             }
         });
 
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('app').classList.replace('hidden', 'flex');
+                loadCounters();
+                loadStats();
+                loadMarquee();
+                loadStaffList();
+            } else {
+                document.getElementById('authSection').classList.remove('hidden');
+                document.getElementById('app').classList.replace('flex', 'hidden');
+            }
+        });
+
+        // 📊 โหลดสถิติเรียลไทม์
         function loadStats() {
             onValue(ref(db, 'live/calls'), (snapshot) => {
-                statsContainer.innerHTML = '';
+                const container = document.getElementById('statsContainer');
+                container.innerHTML = '';
                 if (!snapshot.exists()) {
-                    statsContainer.innerHTML = '<p class="text-slate-500 italic col-span-4 text-center py-4">ยังไม่มีประวัติการเรียกคิวในวันนี้</p>';
+                    container.innerHTML = '<p class="text-slate-500 italic col-span-5 text-center py-4">ยังไม่มีประวัติคิวในวันนี้</p>';
                     return;
                 }
-                const stats = {};
-                let totalCalls = 0;
-                snapshot.forEach(child => {
-                    const data = child.val();
-                    stats[data.counterName] = (stats[data.counterName] || 0) + 1;
-                    totalCalls++;
-                });
+                const stats = {}; let total = 0;
+                snapshot.forEach(child => { stats[child.val().counterName] = (stats[child.val().counterName] || 0) + 1; total++; });
+                
                 const totalDiv = document.createElement('div');
                 totalDiv.className = "bg-blue-100 p-4 rounded-xl text-center border-2 border-blue-200 shadow-sm flex flex-col justify-center";
-                totalDiv.innerHTML = `<p class="text-sm text-blue-700 font-bold mb-1">รวมทุกช่องบริการ</p><p class="text-4xl font-bold text-blue-900">${totalCalls} <span class="text-lg">คิว</span></p>`;
-                statsContainer.appendChild(totalDiv);
+                totalDiv.innerHTML = `<p class="text-xs text-blue-700 font-bold mb-1">รวมทุกช่อง</p><p class="text-3xl font-bold text-blue-900">${total} คิว</p>`;
+                container.appendChild(totalDiv);
 
                 for (const [name, count] of Object.entries(stats)) {
                     const div = document.createElement('div');
                     div.className = "bg-white p-4 rounded-xl text-center border border-slate-200 shadow-sm flex flex-col justify-center";
-                    div.innerHTML = `<p class="text-sm text-slate-600 font-bold mb-1">${name}</p><p class="text-3xl font-bold text-slate-800">${count}</p>`;
-                    statsContainer.appendChild(div);
+                    div.innerHTML = `<p class="text-xs text-slate-600 font-bold mb-1">${name}</p><p class="text-2xl font-bold text-slate-800">${count}</p>`;
+                    container.appendChild(div);
                 }
             });
         }
 
-        // ดึงข้อความวิ่งปัจจุบันมาแสดง
         function loadMarquee() {
-            onValue(ref(db, 'live/marquee'), (snapshot) => {
-                marqueeInput.value = snapshot.val() || "";
-            });
+            onValue(ref(db, 'live/marquee'), (snapshot) => { document.getElementById('marqueeInput').value = snapshot.val() || ""; });
         }
 
-        // อัปเดตข้อความวิ่ง
         document.getElementById('updateMarqueeBtn').onclick = async () => {
-            const text = marqueeInput.value.trim();
-            try {
-                await set(ref(db, 'live/marquee'), text);
-                alert("อัปเดตข้อความบนจอทีวีเรียบร้อยแล้ว!");
-            } catch (e) { alert("Error: " + e.message); }
+            try { await set(ref(db, 'live/marquee'), document.getElementById('marqueeInput').value.trim()); alert("อัปเดตข้อความวิ่งแล้ว!"); } catch (e) { alert("Error: " + e.message); }
         };
 
         document.getElementById('clearDataBtn').onclick = async () => {
-            if(confirm("⚠️ ยืนยันการล้างข้อมูลประจำวัน?")) {
-                try {
-                    await remove(ref(db, 'live/calls'));
-                    alert("✅ ล้างข้อมูลประวัติคิวเรียบร้อยแล้ว!");
-                } catch(e) { alert("Error: " + e.message); }
+            if(confirm("⚠️ ยืนยันล้างประวัติคิวทั้งหมดของวันนี้?")) {
+                try { await remove(ref(db, 'live/calls')); alert("ล้างข้อมูลสำเร็จ!"); } catch(e) { alert("Error: " + e.message); }
             }
         };
 
-        document.getElementById('registerBtn').onclick = async () => {
-            try {
-                const cred = await createUserWithEmailAndPassword(auth, document.getElementById('authEmail').value, document.getElementById('authPass').value);
-                await set(ref(db, 'users/' + cred.user.uid), { role: 'admin' });
-                alert("สร้างบัญชี Admin สำเร็จ");
-            } catch (e) { alert(e.message); }
-        };
-
-        document.getElementById('loginBtn').onclick = async () => {
-            try { await signInWithEmailAndPassword(auth, document.getElementById('authEmail').value, document.getElementById('authPass').value);
-            } catch (e) { alert("เข้าสู่ระบบล้มเหลว"); }
-        };
-
-        document.getElementById('logoutBtn').onclick = () => signOut(auth);
-
-        document.getElementById('addCounterBtn').onclick = async () => {
-            const name = document.getElementById('counterName').value.trim();
-            if(!name) return;
-            try {
-                const newRef = push(ref(db, 'counters'));
-                await set(newRef, { id: newRef.key, name: name });
-                document.getElementById('counterName').value = '';
-            } catch (e) { alert(e.message); }
-        };
-
+        // 🏥 CRUD: โหลดและจัดการช่องบริการ
         function loadCounters() {
             onValue(ref(db, 'counters'), (snapshot) => {
-                counterList.innerHTML = '';
-                staffCounterSelect.innerHTML = '<option value="">-- เลือกช่องบริการประจำ --</option>';
+                const list = document.getElementById('counterList');
+                const select = document.getElementById('staffCounter');
+                list.innerHTML = '';
+                select.innerHTML = '<option value="">-- เลือกช่องบริการประจำ --</option>';
+                globalCounters = {};
+
+                if (!snapshot.exists()) {
+                    list.innerHTML = '<p class="text-slate-400 italic text-center py-2 text-sm">ยังไม่มีการเพิ่มช่องบริการ</p>';
+                    return;
+                }
+
                 snapshot.forEach((child) => {
                     const data = child.val();
-                    const li = document.createElement('li');
-                    li.className = "bg-white p-3 border border-slate-100 rounded-lg text-sm font-semibold text-slate-700 shadow-sm";
-                    li.innerText = data.name;
-                    counterList.appendChild(li);
-                    
+                    globalCounters[child.key] = data.name;
+
+                    // เติมลง Dropdown ฟอร์มพนักงาน
                     const opt = document.createElement('option');
-                    opt.value = child.key;
-                    opt.innerText = data.name;
-                    staffCounterSelect.appendChild(opt);
+                    opt.value = child.key; opt.innerText = data.name;
+                    select.appendChild(opt);
+
+                    // สร้าง UI List พร้อมปุ่ม แก้ไข / ลบ
+                    const li = document.createElement('li');
+                    li.className = "bg-slate-50 p-3 border rounded-lg flex justify-between items-center text-sm font-semibold text-slate-700 shadow-sm";
+                    li.innerHTML = `
+                        <span>${data.name}</span>
+                        <div class="flex gap-2">
+                            <button class="edit-btn text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1 rounded transition">แก้ไข</button>
+                            <button class="del-btn text-red-600 hover:text-red-800 bg-red-50 px-3 py-1 rounded transition">ลบ</button>
+                        </div>
+                    `;
+
+                    // ปุ่มแก้ไขชื่อช่องบริการ (Inline Edit)
+                    li.querySelector('.edit-btn').onclick = async () => {
+                        const newName = prompt(`แก้ไขชื่อช่องบริการ "${data.name}" เป็น:`, data.name);
+                        if (newName && newName.trim() !== "" && newName.trim() !== data.name) {
+                            try { await update(ref(db, `counters/${child.key}`), { name: newName.trim() }); } catch (e) { alert(e.message); }
+                        }
+                    };
+
+                    // ปุ่มลบช่องบริการ
+                    li.querySelector('.del-btn').onclick = async () => {
+                        if (confirm(`⚠️ ยืนยันการลบ "${data.name}"?\n\nพนักงานที่ผูกกับช่องนี้จะต้องเลือกช่องประจำใหม่`)) {
+                            try { await remove(ref(db, `counters/${child.key}`)); } catch (e) { alert(e.message); }
+                        }
+                    };
+
+                    list.appendChild(li);
                 });
             });
         }
 
+        document.getElementById('addCounterBtn').onclick = async () => {
+            const name = document.getElementById('counterName').value.trim();
+            if(!name) return;
+            try { const newRef = push(ref(db, 'counters')); await set(newRef, { id: newRef.key, name: name }); document.getElementById('counterName').value = ''; } catch (e) { alert(e.message); }
+        };
+
+        // 👥 CRUD: โหลดและจัดการพนักงาน
+        function loadStaffList() {
+            onValue(ref(db, 'users'), (snapshot) => {
+                const list = document.getElementById('staffList');
+                list.innerHTML = '';
+                
+                let hasStaff = false;
+                snapshot.forEach((child) => {
+                    const data = child.val();
+                    if (data.role !== 'staff') return; // ดึงเฉพาะพนักงาน ไม่ดึง admin
+                    hasStaff = true;
+
+                    const li = document.createElement('li');
+                    li.className = "bg-slate-50 p-3 border rounded-lg flex flex-col gap-2 text-sm shadow-sm";
+                    
+                    // สร้าง Dropdown สลับช่องบริการประจำให้พนักงานในตารางแบบเรียลไทม์
+                    let optionsHtml = `<option value="">-- ไม่ระบุช่อง --</option>`;
+                    for (const [id, cName] of Object.entries(globalCounters)) {
+                        const selected = (id === data.counterId) ? 'selected' : '';
+                        optionsHtml += `<option value="${id}" ${selected}>${cName}</option>`;
+                    }
+
+                    li.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-slate-800 break-all">${data.email}</span>
+                            <button class="del-staff-btn text-xs text-red-500 hover:text-red-700 bg-red-50 px-2 py-1 rounded font-bold transition">ลบพนักงาน</button>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-slate-500 font-semibold">ประจำช่อง:</span>
+                            <select class="change-counter-select border rounded px-2 py-1 bg-white focus:border-blue-500 outline-none font-semibold text-slate-700">
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                    `;
+
+                    // ฟังก์ชันเปลี่ยนช่องบริการประจำของพนักงานทันทีเมื่อกดเลือกย้ายช่อง
+                    li.querySelector('.change-counter-select').onchange = async (e) => {
+                        try {
+                            await update(ref(db, `users/${child.key}`), { counterId: e.target.value });
+                            alert(`ย้ายช่องประจำของพนักงานสำเร็จ!`);
+                        } catch (e) { alert("เกิดข้อผิดพลาด: " + e.message); }
+                    };
+
+                    // ฟังก์ชันลบพนักงานออกจากฐานข้อมูล
+                    li.querySelector('.del-staff-btn').onclick = async () => {
+                        if (confirm(`⚠️ ยืนยันลบพนักงาน "${data.email}" ออกจากระบบ?\n\nพนักงานคนนี้จะไม่สามารถล็อกอินทำงานคิวได้อีกต่อไป`)) {
+                            try { await remove(ref(db, `users/${child.key}`)); } catch (e) { alert(e.message); }
+                        }
+                    };
+
+                    list.appendChild(li);
+                });
+
+                if (!hasStaff) {
+                    list.innerHTML = '<p class="text-slate-400 italic text-center py-2 text-sm">ยังไม่มีบัญชีพนักงานในระบบ</p>';
+                }
+            });
+        }
+
+        // ลงทะเบียนสร้างบัญชีพนักงานใหม่
         document.getElementById('addStaffBtn').onclick = async () => {
-            const email = document.getElementById('staffEmail').value;
+            const email = document.getElementById('staffEmail').value.trim();
             const pass = document.getElementById('staffPass').value;
             const counterId = staffCounterSelect.value;
             const status = document.getElementById('staffStatus');
-            if(!email || !pass || !counterId) { status.innerText = "กรุณากรอกให้ครบ"; return; }
+            if(!email || !pass || !counterId) { status.innerText = "กรุณากรอกให้ครบ"; status.className="text-red-500 text-xs mt-2"; return; }
             
             try {
-                status.innerText = "กำลังสร้าง...";
+                status.innerText = "กำลังสร้าง..."; status.className="text-blue-500 text-xs mt-2";
                 const cred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
-                await set(ref(db, 'users/' + cred.user.uid), { role: 'staff', counterId: counterId });
+                
+                // บันทึก email ลงฐานข้อมูลด้วย เพื่อดึงรายชื่อมาแสดงผลการจัดการหลังบ้านได้
+                await set(ref(db, 'users/' + cred.user.uid), { 
+                    role: 'staff', 
+                    counterId: counterId,
+                    email: email 
+                });
                 await signOut(secondaryAuth);
-                status.innerText = "✅ สร้างบัญชีสำเร็จ!";
+                status.innerText = "✅ สร้างพนักงานและผูกช่องสำเร็จ!"; status.className="text-green-600 text-xs font-bold mt-2";
                 document.getElementById('staffEmail').value = ''; document.getElementById('staffPass').value = '';
-            } catch (e) { status.innerText = "Error: " + e.message; }
+            } catch (e) { status.innerText = "Error: " + e.message; status.className="text-red-500 text-xs mt-2"; }
         };
+
+        // แอดมินล็อกอิน / ล็อกเอาต์
+        document.getElementById('registerBtn').onclick = async () => {
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, document.getElementById('authEmail').value, document.getElementById('authPass').value);
+                await set(ref(db, 'users/' + cred.user.uid), { role: 'admin' });
+                alert("ลงทะเบียนแอดมินคนแรกสำเร็จ!");
+            } catch (e) { alert(e.message); }
+        };
+        document.getElementById('loginBtn').onclick = async () => {
+            try { await signInWithEmailAndPassword(auth, document.getElementById('authEmail').value, document.getElementById('authPass').value); } catch (e) { alert("เข้าสู่ระบบล้มเหลว"); }
+        };
+        document.getElementById('logoutBtn').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
