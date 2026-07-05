@@ -99,7 +99,6 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // 📶 ตัวตรวจเช็คสถานะอินเทอร์เน็ตพนักงาน
         const connectedRef = ref(db, ".info/connected");
         onValue(connectedRef, (snap) => {
             const statusDiv = document.getElementById('networkStatus');
@@ -111,7 +110,6 @@
             } else {
                 statusDiv.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span> ออฟไลน์ (เน็ตหลุด)';
                 statusDiv.className = 'flex items-center gap-2 text-xs font-bold text-red-700 bg-red-100 px-3 py-1 rounded-full border border-red-400 transition-colors duration-300';
-                // ล็อกปุ่มป้องกันการกดตอนเน็ตหลุด
                 document.getElementById('callBtn').disabled = true;
                 document.getElementById('callBtn').classList.add('opacity-50', 'cursor-not-allowed');
             }
@@ -222,16 +220,26 @@
             }
         });
 
+        // 🟢 ฟังก์ชันให้กด Enter เพื่อ Log in ได้ทันทีในหน้า Staff
+        const loginTrigger = function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginBtn').click();
+            }
+        };
+        document.getElementById('email').addEventListener('keypress', loginTrigger);
+        document.getElementById('pass').addEventListener('keypress', loginTrigger);
+
         document.getElementById('loginBtn').onclick = () => {
             const emailVal = document.getElementById('email').value.trim();
             const passVal = document.getElementById('pass').value;
             if(!emailVal || !passVal) { alert("กรุณากรอกข้อมูลให้ครบถ้วน"); return; }
-            signInWithEmailAndPassword(auth, emailVal, passVal).catch(e => alert("เข้าสู่ระบบล้มเหลว"));
+            signInWithEmailAndPassword(auth, emailVal, passVal).catch(e => alert("อีเมลหรือรหัสผ่านไม่ถูกต้อง"));
         };
 
         document.getElementById('logoutBtn').onclick = () => {
             signOut(auth).then(() => {
                 patientNameInput.value = ''; skippedList.innerHTML = ''; skippedCount = 0; skipCountDisplay.innerText = "0 คน";
+                document.getElementById('email').value = ''; document.getElementById('pass').value = '';
             });
         };
 
