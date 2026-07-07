@@ -148,7 +148,6 @@
         const loadTime = Date.now(); 
         let globalAudioCtx = null;
 
-        // 🟢 ฟังก์ชันปลดล็อกเสียงเมื่อมีการคลิกจอ
         document.getElementById('audioUnlocker').addEventListener('click', function() {
             if (!globalAudioCtx) {
                 globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -156,7 +155,6 @@
             if (globalAudioCtx.state === 'suspended') {
                 globalAudioCtx.resume();
             }
-            // ส่งเสียงเตือนเล็กน้อยเพื่อให้รู้ว่าลำโพงทำงานแล้ว
             if (typeof responsiveVoice !== 'undefined') {
                 responsiveVoice.speak("ระบบเสียงพร้อมใช้งาน", "Thai Female", {volume: 1, rate: 0.85});
             }
@@ -235,7 +233,10 @@
             }
             
             playSynthesizedChime().then(() => {
-                const textToSpeak = `ขอเชิญคุณ ${data.name} ที่ ${data.counterName} ค่ะ`;
+                // 🟢 สร้างตัวแปรใหม่ แปลงชื่อให้เป็นพิมพ์เล็ก (Lowercase) ป้องกัน AI สะกดทีละตัวอักษร
+                const spokenName = data.name.toLowerCase();
+                const textToSpeak = `ขอเชิญคุณ ${spokenName} ที่ ${data.counterName} ค่ะ`;
+                
                 const safetyTimer = setTimeout(() => { isSpeaking = false; processQueue(); }, 6000);
 
                 if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
@@ -262,7 +263,6 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        // 🟢 ให้ระบบโหลดคิวรอไว้เลย ถึงแม้จะยังไม่ได้กดปุ่มก็ตาม
         window.onload = () => {
             const callsRef = query(ref(db, 'live/calls'), orderByChild('timestamp'), startAt(loadTime));
             onChildAdded(callsRef, (snapshot) => {
